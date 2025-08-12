@@ -7,11 +7,23 @@ import { comparePassword } from "../utils/hash.js";
 import * as response from "../utils/response.js";
 
 const signUp = asyncWrapper(async (req, res) => {
-  const { first_name, last_name, email, password } = req.body;
+  const {
+    first_name,
+    last_name,
+    email,
+    password,
+    country = "US",
+    state = "Florida",
+    zone,
+  } = req.body;
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
     throw new CustomError("Email already registered", 409);
+  }
+
+  if (!zone) {
+    throw new CustomError("Zone is required", 400);
   }
 
   const hashedPassword = await hashPassword(password);
@@ -22,6 +34,9 @@ const signUp = asyncWrapper(async (req, res) => {
       lastName: last_name,
       email,
       password: hashedPassword,
+      country,
+      state,
+      zone,
     },
   });
 
@@ -34,6 +49,9 @@ const signUp = asyncWrapper(async (req, res) => {
       first_name: user.firstName,
       last_name: user.lastName,
       email: user.email,
+      country: user.country,
+      state: user.state,
+      zone: user.zone,
       token,
     },
     "User registered successfully"
@@ -68,8 +86,10 @@ const login = asyncWrapper(async (req, res) => {
       first_name: user.firstName,
       last_name: user.lastName,
       email: user.email,
+      country: user.country,
+      state: user.state,
+      zone: user.zone,
       lastLoginAt: user.lastLoginAt,
-      isSocialLogin: user.isSocialLogin,
       token,
     },
     "Logged in successfully"

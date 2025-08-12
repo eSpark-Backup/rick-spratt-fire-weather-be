@@ -29,7 +29,7 @@ const swaggerSpec = swaggerJsDoc({
       },
     ],
   },
-  apis: ["./src/docs/*.js"], // adjust path if needed
+  apis: ["./src/docs/*.js"],
 });
 
 export { swaggerUi, swaggerSpec };

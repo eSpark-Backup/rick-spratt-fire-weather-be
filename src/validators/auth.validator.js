@@ -5,13 +5,17 @@ const signUpSchema = Joi.object({
   last_name: Joi.string().trim().min(2).max(50).required(),
   email: Joi.string().trim().lowercase().email().required(),
   password: Joi.string()
-    .min(8) // 🔒 Stronger minimum length
-    .max(100) // 👌 Prevent DoS via long passwords
-    .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$")) // At least 1 lowercase, 1 uppercase, 1 digit
+    .min(8)
+    .max(100)
+    .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$"))
     .message(
       "Password must contain at least 1 uppercase, 1 lowercase, and 1 digit"
     )
     .required(),
+  confirm_password: Joi.any().valid(Joi.ref("password")).required(),
+  country: Joi.string().default("US"),
+  state: Joi.string().default("Florida"),
+  zone: Joi.string().required(),
 });
 
 const loginSchema = Joi.object({
