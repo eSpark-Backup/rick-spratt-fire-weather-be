@@ -5,15 +5,10 @@ const swaggerSpec = swaggerJsDoc({
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Social Travel API",
+      title: "Fire Weather SMS Alert App",
       version: "1.0.0",
-      description: "API documentation for the Social Travel App",
+      description: "API documentation for the Fire Weather SMS Alert App",
     },
-    servers: [
-      {
-        url: "http://localhost:5000",
-      },
-    ],
     components: {
       securitySchemes: {
         bearerAuth: {
