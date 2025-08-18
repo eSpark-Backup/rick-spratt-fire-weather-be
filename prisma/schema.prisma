@@ -8,16 +8,30 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  firstName     String
-  lastName      String
-  email         String    @unique
-  password      String
-  country       String    @default("US")
-  state         String    @default("Florida")
-  zone          String
-  lastLoginAt   DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id          String      @id @default(uuid())
+  firstName   String
+  lastName    String
+  email       String      @unique
+  password    String
+  country     String      @default("US")
+  state       String      @default("Florida")
+  zone        String
+  lastLoginAt DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  Threshold   Threshold[]
 }
 
+model Threshold {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tempMin   Int?
+  tempMax   Int?
+  rhMin     Int?
+  rhMax     Int?
+  windMin   Int?
+  windMax   Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

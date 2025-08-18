@@ -16,7 +16,7 @@ const authenticate = asyncWrapper(async (req, res, next) => {
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     req.user = {
-      user_id: payload.user_id,
+      id: payload.user_id,
       email: payload.email,
     };
     next();

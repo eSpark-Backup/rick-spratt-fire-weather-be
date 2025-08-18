@@ -54,27 +54,27 @@ export const getZoneWeatherObservations = async (
     return data.features.map((obs) => ({
       timestamp: obs.properties.timestamp,
       temperature: obs.properties.temperature?.value ?? null,
-      dewpoint: obs.properties.dewpoint?.value ?? null,
+      relativeHumidity: obs.properties.relativeHumidity?.value ?? null,
       windDirection: obs.properties.windDirection?.value ?? null,
       windSpeed: obs.properties.windSpeed?.value ?? null,
       windGust: obs.properties.windGust?.value ?? null,
-      pressure: obs.properties.barometricPressure?.value ?? null,
-      seaLevelPressure: obs.properties.seaLevelPressure?.value ?? null,
-      visibility: obs.properties.visibility?.value ?? null,
-      maxTemperatureLast24Hours:
-        obs.properties.maxTemperatureLast24Hours?.value ?? null,
-      minTemperatureLast24Hours:
-        obs.properties.minTemperatureLast24Hours?.value ?? null,
-      precipitationLastHour:
-        obs.properties.precipitationLastHour?.value ?? null,
-      precipitationLast3Hours:
-        obs.properties.precipitationLast3Hours?.value ?? null,
-      relativeHumidity: obs.properties.relativeHumidity?.value ?? null,
-      windChill: obs.properties.windChill?.value ?? null,
-      heatIndex: obs.properties.heatIndex?.value ?? null,
       textDescription: obs.properties.textDescription,
-      cloudBase: obs.properties.cloudLayers?.[0]?.base?.value ?? null,
-      cloudAmount: obs.properties.cloudLayers?.[0]?.amount ?? null,
+      // dewpoint: obs.properties.dewpoint?.value ?? null,
+      // pressure: obs.properties.barometricPressure?.value ?? null,
+      // seaLevelPressure: obs.properties.seaLevelPressure?.value ?? null,
+      // visibility: obs.properties.visibility?.value ?? null,
+      // maxTemperatureLast24Hours:
+      //   obs.properties.maxTemperatureLast24Hours?.value ?? null,
+      // minTemperatureLast24Hours:
+      //   obs.properties.minTemperatureLast24Hours?.value ?? null,
+      // precipitationLastHour:
+      //   obs.properties.precipitationLastHour?.value ?? null,
+      // precipitationLast3Hours:
+      //   obs.properties.precipitationLast3Hours?.value ?? null,
+      // windChill: obs.properties.windChill?.value ?? null,
+      // heatIndex: obs.properties.heatIndex?.value ?? null,
+      // cloudBase: obs.properties.cloudLayers?.[0]?.base?.value ?? null,
+      // cloudAmount: obs.properties.cloudLayers?.[0]?.amount ?? null,
     }));
   } catch (error) {
     throw new CustomError(

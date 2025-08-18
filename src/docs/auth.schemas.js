@@ -9,6 +9,10 @@
  *         - last_name
  *         - email
  *         - password
+ *         - confirm_password
+ *         - country
+ *         - state
+ *         - zone
  *       properties:
  *         first_name:
  *           type: string
@@ -18,6 +22,17 @@
  *           type: string
  *         password:
  *           type: string
+ *         confirm_password:
+ *           type: string
+ *         country:
+ *           type: string
+ *           default: "US"
+ *         state:
+ *           type: string
+ *           default: "Florida"
+ *         zone:
+ *           type: string
+ *           default: "Miami"  # Example FL zone
  *     Login:
  *       type: object
  *       required:

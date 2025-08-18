@@ -6,6 +6,7 @@ import morgan from "morgan";
 
 import { authRoutes } from "./routes/auth.routes.js";
 import { weatherRoutes } from "./routes/weather.routes.js";
+import { thresholdRoutes } from "./routes/threshold.routes.js";
 import { errorHandler } from "./middlewares/error_handler.js";
 import { swaggerUi, swaggerSpec } from "./swagger.js";
 
@@ -24,6 +25,8 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/auth", authRoutes);
 
 app.use("/api/weather", weatherRoutes);
+
+app.use("/api/threshold", thresholdRoutes);
 
 
 app.use(errorHandler);
