@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+// import "./jobs/weather.job.js";
+import "./jobs/weather.job.for.testing.js";
 
 import { authRoutes } from "./routes/auth.routes.js";
 import { weatherRoutes } from "./routes/weather.routes.js";

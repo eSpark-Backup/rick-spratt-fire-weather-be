@@ -42,3 +42,26 @@
  *       400:
  *         description: Validation error
  */
+
+/**
+ * @swagger
+ * /api/auth/zone:
+ *   patch:
+ *     summary: Update the logged-in user's zone
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateZone'
+ *     responses:
+ *       200:
+ *         description: Zone updated successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ */

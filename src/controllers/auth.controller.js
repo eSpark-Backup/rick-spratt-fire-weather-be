@@ -14,7 +14,7 @@ const signUp = asyncWrapper(async (req, res) => {
     password,
     country = "US",
     state = "Florida",
-    zone,
+    zoneId,
   } = req.body;
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -22,7 +22,7 @@ const signUp = asyncWrapper(async (req, res) => {
     throw new CustomError("Email already registered", 409);
   }
 
-  if (!zone) {
+  if (!zoneId) {
     throw new CustomError("Zone is required", 400);
   }
 
@@ -36,7 +36,7 @@ const signUp = asyncWrapper(async (req, res) => {
       password: hashedPassword,
       country,
       state,
-      zone,
+      zoneId,
     },
   });
 
@@ -51,7 +51,7 @@ const signUp = asyncWrapper(async (req, res) => {
       email: user.email,
       country: user.country,
       state: user.state,
-      zone: user.zone,
+      zoneId: user.zoneId,
       token,
     },
     "User registered successfully"
@@ -88,7 +88,7 @@ const login = asyncWrapper(async (req, res) => {
       email: user.email,
       country: user.country,
       state: user.state,
-      zone: user.zone,
+      zoneId: user.zoneId,
       lastLoginAt: user.lastLoginAt,
       token,
     },
@@ -96,4 +96,29 @@ const login = asyncWrapper(async (req, res) => {
   );
 });
 
-export { signUp, login };
+const updateZone = asyncWrapper(async (req, res) => {
+  const { zoneId } = req.body;
+  const userId = req.user.id;
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: { zoneId },
+  });
+
+  response.success(
+    res,
+    {
+      user_id: updatedUser.id,
+      first_name: updatedUser.firstName,
+      last_name: updatedUser.lastName,
+      email: updatedUser.email,
+      country: updatedUser.country,
+      state: updatedUser.state,
+      zoneId: updatedUser.zoneId,
+    },
+    "Zone updated successfully"
+  );
+});
+
+
+export { signUp, login, updateZone };

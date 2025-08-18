@@ -12,7 +12,7 @@
  *         - confirm_password
  *         - country
  *         - state
- *         - zone
+ *         - zoneId
  *       properties:
  *         first_name:
  *           type: string
@@ -30,9 +30,9 @@
  *         state:
  *           type: string
  *           default: "Florida"
- *         zone:
+ *         zoneId:
  *           type: string
- *           default: "Miami"  # Example FL zone
+ *           default: "FLZ139"  # Example FL zone
  *     Login:
  *       type: object
  *       required:
@@ -43,4 +43,12 @@
  *           type: string
  *         password:
  *           type: string
+ *     UpdateZone:
+ *       type: object
+ *       required:
+ *         - zoneId
+ *       properties:
+ *         zoneId:
+ *           type: string
+ *           example: "FLZ139"
  */

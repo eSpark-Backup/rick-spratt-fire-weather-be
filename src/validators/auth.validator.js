@@ -15,7 +15,7 @@ const signUpSchema = Joi.object({
   confirm_password: Joi.any().valid(Joi.ref("password")).required(),
   country: Joi.string().default("US"),
   state: Joi.string().default("Florida"),
-  zone: Joi.string().required(),
+  zoneId: Joi.string().required(),
 });
 
 const loginSchema = Joi.object({
@@ -23,4 +23,8 @@ const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
-export { signUpSchema, loginSchema };
+const updateZoneSchema = Joi.object({
+  zoneId: Joi.string().trim().required(),
+});
+
+export { signUpSchema, loginSchema, updateZoneSchema };

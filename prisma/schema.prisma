@@ -15,11 +15,12 @@ model User {
   password    String
   country     String      @default("US")
   state       String      @default("Florida")
-  zone        String
+  zoneId      String
+  deviceToken String?
   lastLoginAt DateTime?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-  Threshold   Threshold[]
+  Threshold   Threshold?
 }
 
 model Threshold {
