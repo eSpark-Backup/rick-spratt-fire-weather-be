@@ -1,12 +1,12 @@
 import { asyncWrapper } from "../utils/async_wrapper.js";
 import * as response from "../utils/response.js";
-import { getFireZones, getZoneWeatherObservations } from "../services/weather.service.js";
+import { getAllZones, getZoneWeatherObservations } from "../services/weather.service.js";
 import { paginate } from "../utils/pagination.js";
 
 const getZones = asyncWrapper(async (req, res) => {
   const { area, type, limit: queryLimit, effective, include_geometry, page = 1, limit = 10 } = req.query;
 
-  const zones = await getFireZones({
+  const zones = await getAllZones({
     area,
     type,
     limit: 500,

@@ -46,9 +46,6 @@
  *         temperatureUnit:
  *           type: string
  *           example: "C"
- *         dewpoint:
- *           type: number
- *           example: 25
  *         windSpeed:
  *           type: number
  *           example: 9.25
@@ -58,59 +55,12 @@
  *         windGust:
  *           type: number
  *           example: 15
- *         pressure:
- *           type: number
- *           example: 101592
- *         seaLevelPressure:
- *           type: number
- *           example: 101800
- *         visibility:
- *           type: number
- *           example: 16093
- *         maxTemperatureLast24Hours:
- *           type: number
- *           example: 30
- *         minTemperatureLast24Hours:
- *           type: number
- *           example: 22
- *         precipitationLastHour:
- *           type: number
- *           example: 0.5
- *         precipitationLast3Hours:
- *           type: number
- *           example: 1.2
- *         precipitationLast6Hours:
- *           type: number
- *           example: 2.0
  *         relativeHumidity:
  *           type: number
  *           example: 89
- *         windChill:
- *           type: number
- *           example: 27
- *         heatIndex:
- *           type: number
- *           example: 31
  *         textDescription:
  *           type: string
  *           example: "Clear"
- *         cloudBase:
- *           type: number
- *           example: 3810
- *         cloudAmount:
- *           type: string
- *           example: "CLR"
- *         cloudLayers:
- *           type: array
- *           items:
- *             type: object
- *             properties:
- *               base:
- *                 type: number
- *                 example: 3810
- *               amount:
- *                 type: string
- *                 example: "CLR"
  *     ZonesResponse:
  *       type: object
  *       properties:

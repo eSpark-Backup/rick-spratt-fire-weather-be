@@ -2,9 +2,9 @@ import axios from "axios";
 import { CustomError } from "../utils/custom_error.js";
 
 const WEATHER_API_BASE = "https://api.weather.gov";
-export const getFireZones = async ({
+export const getAllZones = async ({
   area = "FL",
-  type = "fire",
+  type,
   limit = 500,
   effective,
   include_geometry = false,
