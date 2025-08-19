@@ -1,7 +1,86 @@
+// import axios from "axios";
+// import { CustomError } from "../utils/custom_error.js";
+
+// const WEATHER_API_BASE = "https://api.weather.gov";
+// export const getAllZones = async ({
+//   area = "FL",
+//   type,
+//   limit = 500,
+//   effective,
+//   include_geometry = false,
+// } = {}) => {
+//   try {
+//     const { data } = await axios.get(`${WEATHER_API_BASE}/zones`, {
+//       params: {
+//         area,
+//         type,
+//         limit,
+//         effective,
+//         include_geometry,
+//       },
+//     });
+
+//     return data.features.map((zone) => ({
+//       id: zone.properties.id,
+//       name: zone.properties.name,
+//       type: zone.properties.type,
+//       state: zone.properties.state,
+//       effectiveDate: zone.properties.effectiveDate,
+//       expirationDate: zone.properties.expirationDate
+//     }));
+//   } catch (error) {
+//     throw new CustomError(
+//       `Failed to fetch ${type} zones for ${area}`, 502
+//     );
+//   }
+// };
+
+// export const getZoneWeatherObservations = async (
+//   zoneId,
+//   { start, end, limit } = {}
+// ) => {
+//   try {
+//     const { data } = await axios.get(
+//       `${WEATHER_API_BASE}/zones/forecast/${zoneId}/observations`,
+//       {
+//         params: {
+//           start,
+//           end,
+//           limit,
+//         },
+//       }
+//     );
+
+//     return data.features.map((obs) => ({
+//       timestamp: obs.properties.timestamp,
+//       temperature: obs.properties.temperature?.value ?? null,
+//       relativeHumidity: obs.properties.relativeHumidity?.value ?? null,
+//       windDirection: obs.properties.windDirection?.value ?? null,
+//       windSpeed: obs.properties.windSpeed?.value ?? null,
+//       windGust: obs.properties.windGust?.value ?? null,
+//       textDescription: obs.properties.textDescription,
+//     }));
+//   } catch (error) {
+//     throw new CustomError(
+//       `Failed to fetch weather observations for zone ${zoneId}`, 502
+//     );
+//   }
+// };
+
 import axios from "axios";
 import { CustomError } from "../utils/custom_error.js";
 
 const WEATHER_API_BASE = "https://api.weather.gov";
+
+/**
+ * Fetch all zones from the weather API
+ * @param {Object} options
+ * @param {string} options.area - State/area code
+ * @param {string} [options.type] - Zone type
+ * @param {number} [options.limit=500] - Max number of zones
+ * @param {string} [options.effective] - Effective date filter (ISO)
+ * @param {boolean} [options.include_geometry=false] - Include geometry info
+ */
 export const getAllZones = async ({
   area = "FL",
   type,
@@ -10,15 +89,26 @@ export const getAllZones = async ({
   include_geometry = false,
 } = {}) => {
   try {
+    if (!area)
+      throw new CustomError(
+        "Area parameter is required",
+        400,
+        "VALIDATION_ERROR",
+        { area }
+      );
+
     const { data } = await axios.get(`${WEATHER_API_BASE}/zones`, {
-      params: {
-        area,
-        type,
-        limit,
-        effective,
-        include_geometry,
-      },
+      params: { area, type, limit, effective, include_geometry },
     });
+
+    if (!data?.features || data.features.length === 0) {
+      throw new CustomError(
+        `No zones found for area ${area}`,
+        404,
+        "NOT_FOUND",
+        { area, type }
+      );
+    }
 
     return data.features.map((zone) => ({
       id: zone.properties.id,
@@ -26,30 +116,63 @@ export const getAllZones = async ({
       type: zone.properties.type,
       state: zone.properties.state,
       effectiveDate: zone.properties.effectiveDate,
-      expirationDate: zone.properties.expirationDate
+      expirationDate: zone.properties.expirationDate,
     }));
   } catch (error) {
+    console.error("Weather Service - getAllZones Error:", {
+      area,
+      type,
+      originalError: error.message,
+      stack: error.stack,
+    });
+
+    if (error instanceof CustomError) throw error;
+
     throw new CustomError(
-      `Failed to fetch ${type} zones for ${area}`, 502
+      `Failed to fetch zones for ${area}${type ? ` (${type})` : ""}`,
+      502,
+      "WEATHER_API_ERROR",
+      { area, type, originalError: error.message }
     );
   }
 };
 
+/**
+ * Fetch weather observations for a specific zone
+ * @param {string} zoneId - Zone ID
+ * @param {Object} options
+ * @param {string} [options.start] - Start timestamp (ISO)
+ * @param {string} [options.end] - End timestamp (ISO)
+ * @param {number} [options.limit=500] - Max number of observations
+ */
 export const getZoneWeatherObservations = async (
   zoneId,
-  { start, end, limit } = {}
+  { start, end, limit = 500 } = {}
 ) => {
   try {
+    if (!zoneId)
+      throw new CustomError(
+        "zoneId parameter is required",
+        400,
+        "VALIDATION_ERROR",
+        { zoneId }
+      );
+
     const { data } = await axios.get(
       `${WEATHER_API_BASE}/zones/forecast/${zoneId}/observations`,
       {
-        params: {
-          start,
-          end,
-          limit,
-        },
+        params: { start, end, limit },
       }
     );
+
+    if (!data?.features || data.features.length === 0) {
+      throw new CustomError(
+        `No weather observations found for zone ${zoneId}`,
+        404,
+        "NOT_FOUND",
+        { zoneId }
+      );
+    }
 
     return data.features.map((obs) => ({
       timestamp: obs.properties.timestamp,
@@ -59,26 +182,24 @@ export const getZoneWeatherObservations = async (
       windSpeed: obs.properties.windSpeed?.value ?? null,
       windGust: obs.properties.windGust?.value ?? null,
       textDescription: obs.properties.textDescription,
-      // dewpoint: obs.properties.dewpoint?.value ?? null,
-      // pressure: obs.properties.barometricPressure?.value ?? null,
-      // seaLevelPressure: obs.properties.seaLevelPressure?.value ?? null,
-      // visibility: obs.properties.visibility?.value ?? null,
-      // maxTemperatureLast24Hours:
-      //   obs.properties.maxTemperatureLast24Hours?.value ?? null,
-      // minTemperatureLast24Hours:
-      //   obs.properties.minTemperatureLast24Hours?.value ?? null,
-      // precipitationLastHour:
-      //   obs.properties.precipitationLastHour?.value ?? null,
-      // precipitationLast3Hours:
-      //   obs.properties.precipitationLast3Hours?.value ?? null,
-      // windChill: obs.properties.windChill?.value ?? null,
-      // heatIndex: obs.properties.heatIndex?.value ?? null,
-      // cloudBase: obs.properties.cloudLayers?.[0]?.base?.value ?? null,
-      // cloudAmount: obs.properties.cloudLayers?.[0]?.amount ?? null,
     }));
   } catch (error) {
+    console.error("Weather Service - getZoneWeatherObservations Error:", {
+      zoneId,
+      start,
+      end,
+      limit,
+      originalError: error.message,
+      stack: error.stack,
+    });
+
+    if (error instanceof CustomError) throw error;
+
     throw new CustomError(
-      `Failed to fetch weather observations for zone ${zoneId}`, 502
+      `Failed to fetch weather observations for zone ${zoneId}`,
+      502,
+      "WEATHER_API_ERROR",
+      { zoneId, start, end, originalError: error.message }
     );
   }
 };
