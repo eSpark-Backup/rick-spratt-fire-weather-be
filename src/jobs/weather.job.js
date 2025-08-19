@@ -3,7 +3,23 @@ import { prisma } from "../prisma.js";
 import { getZoneWeatherObservations } from "../services/weather.service.js";
 import { sendNotification } from "../services/notification.service.js";
 
+// Cache with TTL to avoid duplicate alerts
 const lastAlertsCache = new Map();
+const ALERT_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+function setAlertCache(userId, cacheKey) {
+  lastAlertsCache.set(userId, { key: cacheKey, timestamp: Date.now() });
+}
+
+function getAlertCache(userId) {
+  const entry = lastAlertsCache.get(userId);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > ALERT_CACHE_TTL) {
+    lastAlertsCache.delete(userId);
+    return null;
+  }
+  return entry.key;
+}
 
 function checkThresholds(obs, threshold) {
   const alerts = [];
@@ -43,7 +59,7 @@ function checkThresholds(obs, threshold) {
     obs.windSpeed !== null &&
     obs.windSpeed > threshold.windMax
   ) {
-    alerts.push(`Wind speed exceeded ${threshold.windMax}%`);
+    alerts.push(`Wind speed exceeded ${threshold.windMax} Km/h`);
   }
 
   if (
@@ -51,14 +67,14 @@ function checkThresholds(obs, threshold) {
     obs.windSpeed !== null &&
     obs.windSpeed < threshold.windMin
   ) {
-    alerts.push(`Wind speed exceeded ${threshold.windMin}%`);
+    alerts.push(`Wind speed dropped below ${threshold.windMin} Km/h`);
   }
 
   return alerts;
 }
 
 // Run every 15 minutes
-cron.schedule("* * * * *", async () => {
+cron.schedule("* * * * * *", async () => {
   console.log("[CRON] Running optimized weather threshold check...");
 
   try {
@@ -86,18 +102,23 @@ cron.schedule("* * * * *", async () => {
 
             // 4. Check only the latest observation
             const latestObs = observations[0];
-            if (!latestObs) return;
+            if (!latestObs) {
+              console.warn(
+                `[CRON] No weather observation for user ${user.email}`
+              );
+              return;
+            }
 
             const alerts = checkThresholds(latestObs, user.Threshold);
 
             if (alerts.length > 0) {
               const cacheKey = `${user.id}:${alerts.join("|")}`;
-              const lastAlert = lastAlertsCache.get(user.id);
+              const lastAlert = getAlertCache(user.id);
 
               // Avoid sending duplicate alerts
               if (lastAlert !== cacheKey) {
-                 await sendNotification(user, alerts.join("; "));
-                lastAlertsCache.set(user.id, cacheKey);
+                await sendNotification(user, alerts.join("; "));
+                setAlertCache(user.id, cacheKey);
                 console.log(
                   `[ALERT] Sent to ${user.email}: ${alerts.join("; ")}`
                 );

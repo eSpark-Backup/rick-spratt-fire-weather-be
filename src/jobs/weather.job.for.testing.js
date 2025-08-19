@@ -1,9 +1,25 @@
-// src/jobs/weather.job.js
 import cron from "node-cron";
 import { prisma } from "../prisma.js";
 import { getZoneWeatherObservations } from "../services/weather.service.js";
+import { sendNotification } from "../services/notification.service.js";
 
+// Cache with TTL to avoid duplicate alerts
 const lastAlertsCache = new Map();
+const ALERT_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+function setAlertCache(userId, cacheKey) {
+  lastAlertsCache.set(userId, { key: cacheKey, timestamp: Date.now() });
+}
+
+function getAlertCache(userId) {
+  const entry = lastAlertsCache.get(userId);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > ALERT_CACHE_TTL) {
+    lastAlertsCache.delete(userId);
+    return null;
+  }
+  return entry.key;
+}
 
 function checkThresholds(obs, threshold) {
   const alerts = [];
@@ -36,40 +52,36 @@ function checkThresholds(obs, threshold) {
     obs.relativeHumidity > threshold.rhMax
   ) {
     alerts.push(`Humidity exceeded ${threshold.rhMax}%`);
-    }
-    
-  if (
-      threshold.windMin !== null &&
-      obs.windSpeed !== null &&
-      obs.windSpeed < threshold.windMin
-    ) {
-      alerts.push(`Wind speed dropped below ${threshold.windMin} m/s`);
-    }
+  }
 
   if (
     threshold.windMax !== null &&
     obs.windSpeed !== null &&
     obs.windSpeed > threshold.windMax
   ) {
-    alerts.push(`Wind speed exceeded ${threshold.windMax} m/s`);
+    alerts.push(`Wind speed exceeded ${threshold.windMax} Km/h`);
   }
-  
+
+  if (
+    threshold.windMin !== null &&
+    obs.windSpeed !== null &&
+    obs.windSpeed < threshold.windMin
+  ) {
+    alerts.push(`Wind speed dropped below ${threshold.windMin} Km/h`);
+  }
 
   return alerts;
 }
 
-// Run every minute for testing
-cron.schedule("*/5 * * * * *", async () => {
-  console.log(
-    "[CRON] Running weather threshold check at",
-    new Date().toISOString()
-  );
+cron.schedule("* * * * * *", async () => {
+  console.log("[CRON] Running optimized weather threshold check...");
 
   try {
     const batchSize = 20;
     let skip = 0;
 
     while (true) {
+      // 1. Get users in batches to avoid memory overload
       const users = await prisma.user.findMany({
         include: { Threshold: true },
         skip,
@@ -78,29 +90,38 @@ cron.schedule("*/5 * * * * *", async () => {
 
       if (users.length === 0) break;
 
+      // 2. Process all users in parallel
       await Promise.all(
         users.map(async (user) => {
           if (!user.Threshold || !user.zoneId) return;
 
           try {
+            // 3. Fetch weather for the user’s zoneId
             const observations = await getZoneWeatherObservations(user.zoneId);
+
+            // 4. Check only the latest observation
             const latestObs = observations[0];
-            if (!latestObs) return;
+            if (!latestObs) {
+              console.warn(
+                `[CRON] No weather observation for user ${user.email}`
+              );
+              return;
+            }
 
             const alerts = checkThresholds(latestObs, user.Threshold);
 
             if (alerts.length > 0) {
               const cacheKey = `${user.id}:${alerts.join("|")}`;
-              const lastAlert = lastAlertsCache.get(user.id);
+              const lastAlert = getAlertCache(user.id);
 
+              // Avoid sending duplicate alerts
               if (lastAlert !== cacheKey) {
-                lastAlertsCache.set(user.id, cacheKey);
+                await sendNotification(user, alerts.join("; "));
+                setAlertCache(user.id, cacheKey);
                 console.log(
-                  `[ALERT] User: ${user.email} → ${alerts.join("; ")}`
+                  `[ALERT] Sent to ${user.email}: ${alerts.join("; ")}`
                 );
               }
-            } else {
-              console.log(`[INFO] User: ${user.email} → No threshold exceeded`);
             }
           } catch (err) {
             console.error(

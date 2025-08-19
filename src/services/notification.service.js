@@ -1,29 +1,26 @@
 import admin from "firebase-admin";
-import path from "path";
-import { fileURLToPath } from "url";
 
-// Resolve __dirname in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Initialize Firebase Admin SDK (only once)
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(
-      path.join(__dirname, "../../firebase-service-account.json")
-    ),
-  });
-  console.log("[FCM] Firebase Admin initialized");
+let serviceAccount;
+try {
+  serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
+  serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, "\n");
+} catch (err) {
+  console.error("[FCM] Invalid FIREBASE_CONFIG:", err.message);
+  throw new Error("Failed to parse Firebase config");
 }
 
-/**
- * Send push notification via FCM
- * @param {Object} user - User object containing deviceToken
- * @param {String} message - Notification message
- */
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+  console.log("[FCM] Firebase Admin initialized ✅");
+}
+
 export async function sendNotification(user, message) {
-  if (!user.deviceToken) {
-    console.warn(`[FCM] No deviceToken for user: ${user.email}`);
+  if (!user?.deviceToken) {
+    console.warn(
+      `[FCM] Skipped: No deviceToken for user ${user?.email || user?.id}`
+    );
     return;
   }
 
@@ -34,15 +31,31 @@ export async function sendNotification(user, message) {
       body: message,
     },
     data: {
-      userId: user.id,
-      email: user.email,
+      type: "weather_alert",
+      severity: "high",
     },
   };
 
-  try {
-    const response = await admin.messaging().send(payload);
-    console.log(`[FCM] Notification sent to ${user.email}:`, response);
-  } catch (err) {
-    console.error(`[FCM] Failed to send to ${user.email}:`, err.message);
+  const MAX_RETRIES = 2;
+  const RETRY_DELAY = 1000;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES + 1; attempt++) {
+    try {
+      const response = await admin.messaging().send(payload);
+      console.log(`[FCM] Sent to ${user.email}:`, response);
+      break;
+    } catch (err) {
+      if (attempt <= MAX_RETRIES) {
+        console.warn(
+          `[FCM] Retry ${attempt} for user ${user.email} after error: ${err.message}`
+        );
+        await new Promise((res) => setTimeout(res, RETRY_DELAY));
+      } else {
+        console.error(
+          `[FCM] Failed after ${MAX_RETRIES + 1} attempts:`,
+          err.message
+        );
+      }
+    }
   }
 }
