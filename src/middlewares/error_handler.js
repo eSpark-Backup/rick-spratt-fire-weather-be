@@ -15,7 +15,7 @@
 // export { errorHandler };
   
 import { CustomError } from "../utils/custom_error.js";
-import { ValidationError } from "joi";
+import ValidationError from "joi";
 import { Prisma } from "@prisma/client";
 import admin from "firebase-admin";
 
