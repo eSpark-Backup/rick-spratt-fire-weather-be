@@ -15,6 +15,7 @@ const signUp = asyncWrapper(async (req, res) => {
     country = "US",
     state = "Florida",
     zoneId,
+    deviceToken
   } = req.body;
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -37,6 +38,7 @@ const signUp = asyncWrapper(async (req, res) => {
       country,
       state,
       zoneId,
+      deviceToken
     },
   });
 
@@ -120,5 +122,23 @@ const updateZone = asyncWrapper(async (req, res) => {
   );
 });
 
+const updateDeviceToken = asyncWrapper(async (req, res) => {
+  const { deviceToken } = req.body;
+  const userId = req.user.id;
 
-export { signUp, login, updateZone };
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: { deviceToken },
+  });
+
+  response.success(
+    res,
+    {
+      user_id: updatedUser.id,
+      deviceToken: updatedUser.deviceToken,
+    },
+    "Device token updated successfully"
+  );
+});
+
+export { signUp, login, updateZone, updateDeviceToken };

@@ -65,3 +65,27 @@
  *       401:
  *         description: Unauthorized
  */
+
+/**
+ * @swagger
+ * /api/auth/device-token:
+ *   patch:
+ *     summary: Update the logged-in user's FCM device token
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateDeviceToken'
+ *     responses:
+ *       200:
+ *         description: Device token updated successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ */
+

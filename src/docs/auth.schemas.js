@@ -13,6 +13,7 @@
  *         - country
  *         - state
  *         - zoneId
+ *         - deviceToken
  *       properties:
  *         first_name:
  *           type: string
@@ -33,6 +34,8 @@
  *         zoneId:
  *           type: string
  *           default: "FLZ139"  # Example FL zone
+ *         deviceToken:
+ *           type: string
  *     Login:
  *       type: object
  *       required:
@@ -51,4 +54,12 @@
  *         zoneId:
  *           type: string
  *           example: "FLZ139"
+ *     UpdateDeviceToken:
+ *       type: object
+ *       required:
+ *         - deviceToken
+ *       properties:
+ *         deviceToken:
+ *           type: string
+ *           example: "fcm_device_token_here"
  */
