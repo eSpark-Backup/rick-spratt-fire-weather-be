@@ -4,5 +4,3 @@ node_modules
 
 /generated/prisma
 ./src/jobs/weather.job.for.testing.js
-
-fire-weather-sms-alert-firebase-adminsdk-fbsvc-af453a078e

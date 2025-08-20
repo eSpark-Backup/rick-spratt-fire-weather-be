@@ -13,11 +13,9 @@
 // };
 
 // export { errorHandler };
-  
+
 import { CustomError } from "../utils/custom_error.js";
-import ValidationError from "joi";
 import { Prisma } from "@prisma/client";
-import admin from "firebase-admin";
 
 // Helper to detect operational errors
 const isOperationalError = (err) => err instanceof CustomError;
@@ -32,20 +30,25 @@ const parseError = (err) => {
     };
   }
 
-  // Joi validation error
-  if (err instanceof ValidationError) {
+  if (err?.isJoi || err?.name === "ValidationError") {
     return { status: 400, message: err.message, code: "VALIDATION_ERROR" };
   }
 
-  // Prisma errors
-  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+  if (
+    typeof Prisma?.PrismaClientKnownRequestError === "function" &&
+    err instanceof Prisma.PrismaClientKnownRequestError
+  ) {
     return {
       status: 400,
       message: err.meta?.cause || "Database request error",
       code: "PRISMA_REQUEST_ERROR",
     };
   }
-  if (err instanceof Prisma.PrismaClientValidationError) {
+
+  if (
+    typeof Prisma?.PrismaClientValidationError === "function" &&
+    err instanceof Prisma.PrismaClientValidationError
+  ) {
     return {
       status: 400,
       message: err.message,
@@ -53,16 +56,28 @@ const parseError = (err) => {
     };
   }
 
-  // Firebase errors
-  if (err instanceof admin.FirebaseError) {
+  if (err?.code && typeof err.code === "string") {
+    if (err.code.startsWith("auth/")) {
+      return {
+        status: 400,
+        message: err.message || "Firebase authentication error",
+        code: "FIREBASE_AUTH_ERROR",
+      };
+    }
+    if (err.code.startsWith("messaging/")) {
+      return {
+        status: 500,
+        message: err.message || "Firebase messaging error",
+        code: "FIREBASE_MSG_ERROR",
+      };
+    }
     return {
       status: 500,
-      message: "Firebase service error",
+      message: err.message || "Firebase service error",
       code: "FIREBASE_ERROR",
     };
   }
 
-  // Fallback for unknown/unexpected errors
   return {
     status: 500,
     message: "Internal Server Error",
@@ -73,18 +88,14 @@ const parseError = (err) => {
 const errorHandler = (err, req, res, next) => {
   const isDev = process.env.NODE_ENV === "development";
 
-  // Parse the error for safe frontend response
+  // 🔎 Parse for response
   const { status, message, code } = parseError(err);
 
-  // Logging
-  if (isDev) {
-    console.error(`[ERROR] ${req.method} ${req.originalUrl}`);
-    console.error(err.stack || err);
-  } else {
-    console.error(`[ERROR] ${req.method} ${req.originalUrl} - ${message}`);
-  }
+  // 🔎 Always log full error internally
+  console.error(`[ERROR] ${req.method} ${req.originalUrl}`);
+  console.error(err.stack || err);
 
-  // Send structured response
+  // 🔎 Send safe structured response
   res.status(status).json({
     success: false,
     message,
@@ -95,4 +106,3 @@ const errorHandler = (err, req, res, next) => {
 };
 
 export { errorHandler };
-
