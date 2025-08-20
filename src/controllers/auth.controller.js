@@ -17,16 +17,16 @@ const requireFields = (body, fields) => {
 
 const signUp = asyncWrapper(async (req, res) => {
   requireFields(req.body, [
-    "first_name",
-    "last_name",
+    "firstName",
+    "lastName",
     "email",
     "password",
     "zoneId",
   ]);
 
   const {
-    first_name,
-    last_name,
+    firstName,
+    lastName,
     email,
     password,
     country = "US",
@@ -44,8 +44,8 @@ const signUp = asyncWrapper(async (req, res) => {
 
   const user = await prisma.user.create({
     data: {
-      firstName: first_name,
-      lastName: last_name,
+      firstName,
+      lastName,
       email,
       password: hashedPassword,
       country,
@@ -55,14 +55,14 @@ const signUp = asyncWrapper(async (req, res) => {
     },
   });
 
-  const token = generateToken({ user_id: user.id, email: user.email });
+  const token = generateToken({ userId: user.id, email: user.email });
 
   response.success(
     res,
     {
-      user_id: user.id,
-      first_name: user.firstName,
-      last_name: user.lastName,
+      userId: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
       country: user.country,
       state: user.state,
@@ -92,14 +92,14 @@ const login = asyncWrapper(async (req, res) => {
     data: { lastLoginAt: new Date() },
   });
 
-  const token = generateToken({ user_id: user.id, email: user.email });
+  const token = generateToken({ userId: user.id, email: user.email });
 
   response.success(
     res,
     {
-      user_id: user.id,
-      first_name: user.firstName,
-      last_name: user.lastName,
+      userId: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
       country: user.country,
       state: user.state,
@@ -126,9 +126,9 @@ const updateZone = asyncWrapper(async (req, res) => {
   response.success(
     res,
     {
-      user_id: updatedUser.id,
-      first_name: updatedUser.firstName,
-      last_name: updatedUser.lastName,
+      userId: updatedUser.id,
+      firstName: updatedUser.firstName,
+      lastName: updatedUser.lastName,
       email: updatedUser.email,
       country: updatedUser.country,
       state: updatedUser.state,
@@ -152,7 +152,7 @@ const updateDeviceToken = asyncWrapper(async (req, res) => {
 
   response.success(
     res,
-    { user_id: updatedUser.id, deviceToken: updatedUser.deviceToken },
+    { userId: updatedUser.id, deviceToken: updatedUser.deviceToken },
     "Device token updated successfully"
   );
 });
