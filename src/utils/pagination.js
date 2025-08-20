@@ -17,7 +17,7 @@ export const paginate = (items = [], page = 1, limit = 10) => {
   const paginatedItems = items.slice(startIndex, endIndex);
 
   return {
-    data: paginatedItems,
+    items: paginatedItems,
     meta: {
       totalItems,
       totalPages,

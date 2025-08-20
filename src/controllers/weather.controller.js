@@ -46,7 +46,11 @@ const getZones = asyncWrapper(async (req, res) => {
 
   const paginatedResult = paginate(zones, page, queryLimit || limit);
 
-  response.success(res, paginatedResult, "Zones fetched successfully");
+  response.success(
+    res,
+    { zones: paginatedResult.items, meta: paginatedResult.meta },
+    "Zones fetched successfully"
+  );
 });
 
 const getWeather = asyncWrapper(async (req, res) => {
@@ -79,7 +83,7 @@ const getWeather = asyncWrapper(async (req, res) => {
 
   response.success(
     res,
-    paginatedResult,
+    { weather: paginatedResult.items, meta: paginatedResult.meta },
     `Weather observations fetched successfully for zone ${zoneId}`
   );
 });

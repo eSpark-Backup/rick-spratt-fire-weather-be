@@ -59,14 +59,6 @@ export const getAllZones = async ({
   }
 };
 
-/**
- * Fetch weather observations for a specific zone
- * @param {string} zoneId - Zone ID
- * @param {Object} options
- * @param {string} [options.start] - Start timestamp (ISO)
- * @param {string} [options.end] - End timestamp (ISO)
- * @param {number} [options.limit=500] - Max number of observations
- */
 export const getZoneWeatherObservations = async (
   zoneId,
   { start, end, limit = 500 } = {}
