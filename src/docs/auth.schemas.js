@@ -5,25 +5,25 @@
  *     SignUp:
  *       type: object
  *       required:
- *         - first_name
- *         - last_name
+ *         - firstName
+ *         - lastName
  *         - email
  *         - password
- *         - confirm_password
+ *         - confirmPassword
  *         - country
  *         - state
  *         - zoneId
  *         - deviceToken
  *       properties:
- *         first_name:
+ *         firstName:
  *           type: string
- *         last_name:
+ *         lastName:
  *           type: string
  *         email:
  *           type: string
  *         password:
  *           type: string
- *         confirm_password:
+ *         confirmPassword:
  *           type: string
  *         country:
  *           type: string
