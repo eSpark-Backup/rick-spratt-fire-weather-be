@@ -72,7 +72,7 @@ function checkThresholds(obs, threshold) {
   return alerts;
 }
 
-cron.schedule("*/15 * * * *", async () => {
+cron.schedule("0 */3 * * *", async () => {
   console.log("[CRON] Running optimized weather threshold check...");
 
   try {
