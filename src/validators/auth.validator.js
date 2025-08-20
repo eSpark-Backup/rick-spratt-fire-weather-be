@@ -12,7 +12,7 @@ const signUpSchema = Joi.object({
       "Password must contain at least 1 uppercase, 1 lowercase, and 1 digit"
     )
     .required(),
-  confirm_password: Joi.any().valid(Joi.ref("password")).required(),
+  confirmPassword: Joi.any().valid(Joi.ref("password")).required(),
   country: Joi.string().default("US"),
   state: Joi.string().default("Florida"),
   zoneId: Joi.string().required(),
