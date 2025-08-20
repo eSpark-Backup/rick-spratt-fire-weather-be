@@ -9,7 +9,6 @@ import { authenticate } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-// Upsert (create or update) threshold
 router.post(
   "/",
   authenticate,
@@ -17,7 +16,6 @@ router.post(
   createOrUpdateThreshold
 );
 
-// Get threshold for authenticated user
 router.get("/", authenticate, getThreshold);
 
 export { router as thresholdRoutes };

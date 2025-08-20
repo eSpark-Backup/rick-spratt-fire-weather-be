@@ -1,26 +1,8 @@
-// import { CustomError } from "../utils/custom_error.js";
-
-// const errorHandler = (err, req, res, next) => {
-//   console.log(err);
-//   const status = err.statusCode || 500;
-//   const message = err.message || "Something went wrong";
-
-//   res.status(status).json({
-//     success: false,
-//     message,
-//     data: null,
-//   });
-// };
-
-// export { errorHandler };
-
 import { CustomError } from "../utils/custom_error.js";
 import { Prisma } from "@prisma/client";
 
-// Helper to detect operational errors
 const isOperationalError = (err) => err instanceof CustomError;
 
-// Map common error types to frontend-friendly messages
 const parseError = (err) => {
   if (isOperationalError(err)) {
     return {
@@ -87,15 +69,11 @@ const parseError = (err) => {
 
 const errorHandler = (err, req, res, next) => {
   const isDev = process.env.NODE_ENV === "development";
-
-  // 🔎 Parse for response
   const { status, message, code } = parseError(err);
 
-  // 🔎 Always log full error internally
   console.error(`[ERROR] ${req.method} ${req.originalUrl}`);
   console.error(err.stack || err);
 
-  // 🔎 Send safe structured response
   res.status(status).json({
     success: false,
     message,

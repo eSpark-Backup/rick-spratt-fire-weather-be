@@ -3,9 +3,8 @@ import { prisma } from "../prisma.js";
 import { getZoneWeatherObservations } from "../services/weather.service.js";
 import { sendNotification } from "../services/notification.service.js";
 
-// Cache with TTL to avoid duplicate alerts
 const lastAlertsCache = new Map();
-const ALERT_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+const ALERT_CACHE_TTL = 60 * 60 * 1000;
 
 function setAlertCache(userId, cacheKey) {
   lastAlertsCache.set(userId, { key: cacheKey, timestamp: Date.now() });
@@ -73,7 +72,6 @@ function checkThresholds(obs, threshold) {
   return alerts;
 }
 
-// Run every 15 minutes
 cron.schedule("*/15 * * * *", async () => {
   console.log("[CRON] Running optimized weather threshold check...");
 
@@ -82,7 +80,6 @@ cron.schedule("*/15 * * * *", async () => {
     let skip = 0;
 
     while (true) {
-      // 1. Get users in batches to avoid memory overload
       const users = await prisma.user.findMany({
         include: { Threshold: true },
         skip,
@@ -91,16 +88,13 @@ cron.schedule("*/15 * * * *", async () => {
 
       if (users.length === 0) break;
 
-      // 2. Process all users in parallel
       await Promise.all(
         users.map(async (user) => {
           if (!user.Threshold || !user.zoneId) return;
 
           try {
-            // 3. Fetch weather for the user’s zoneId
             const observations = await getZoneWeatherObservations(user.zoneId);
 
-            // 4. Check only the latest observation
             const latestObs = observations[0];
             if (!latestObs) {
               console.warn(
@@ -115,7 +109,6 @@ cron.schedule("*/15 * * * *", async () => {
               const cacheKey = `${user.id}:${alerts.join("|")}`;
               const lastAlert = getAlertCache(user.id);
 
-              // Avoid sending duplicate alerts
               if (lastAlert !== cacheKey) {
                 await sendNotification(user, alerts.join("; "));
                 setAlertCache(user.id, cacheKey);

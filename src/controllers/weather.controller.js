@@ -1,45 +1,3 @@
-// import { asyncWrapper } from "../utils/async_wrapper.js";
-// import * as response from "../utils/response.js";
-// import { getAllZones, getZoneWeatherObservations } from "../services/weather.service.js";
-// import { paginate } from "../utils/pagination.js";
-
-// const getZones = asyncWrapper(async (req, res) => {
-//   const { area, type, limit: queryLimit, effective, include_geometry, page = 1, limit = 10 } = req.query;
-
-//   const zones = await getAllZones({
-//     area,
-//     type,
-//     limit: 500,
-//     effective,
-//     include_geometry,
-//   });
-
-//   const paginatedResult = paginate(zones, page, queryLimit || limit);
-
-//   response.success(res, paginatedResult, "Zones fetched successfully");
-// });
-
-// const getWeather = asyncWrapper(async (req, res) => {
-//   const { zoneId } = req.params;
-//   const { start, end, page = 1, limit = 10 } = req.query;
-
-//   const weatherData = await getZoneWeatherObservations(zoneId, {
-//     start,
-//     end,
-//     limit: 500,
-//   });
-
-//   const paginatedResult = paginate(weatherData, page, limit);
-
-//   response.success(
-//     res,
-//     paginatedResult,
-//     `Weather observations fetched successfully for zone ${zoneId}`
-//   );
-// });
-
-// export { getZones, getWeather };
-
 import { asyncWrapper } from "../utils/async_wrapper.js";
 import * as response from "../utils/response.js";
 import {
@@ -49,7 +7,6 @@ import {
 import { paginate } from "../utils/pagination.js";
 import { CustomError } from "../utils/custom_error.js";
 
-// Helper to validate query params
 const requirePositiveNumber = (value, field) => {
   if (value !== undefined && (isNaN(value) || Number(value) <= 0)) {
     throw new CustomError(

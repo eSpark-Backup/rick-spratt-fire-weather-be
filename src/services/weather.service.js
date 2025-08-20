@@ -1,86 +1,8 @@
-// import axios from "axios";
-// import { CustomError } from "../utils/custom_error.js";
-
-// const WEATHER_API_BASE = "https://api.weather.gov";
-// export const getAllZones = async ({
-//   area = "FL",
-//   type,
-//   limit = 500,
-//   effective,
-//   include_geometry = false,
-// } = {}) => {
-//   try {
-//     const { data } = await axios.get(`${WEATHER_API_BASE}/zones`, {
-//       params: {
-//         area,
-//         type,
-//         limit,
-//         effective,
-//         include_geometry,
-//       },
-//     });
-
-//     return data.features.map((zone) => ({
-//       id: zone.properties.id,
-//       name: zone.properties.name,
-//       type: zone.properties.type,
-//       state: zone.properties.state,
-//       effectiveDate: zone.properties.effectiveDate,
-//       expirationDate: zone.properties.expirationDate
-//     }));
-//   } catch (error) {
-//     throw new CustomError(
-//       `Failed to fetch ${type} zones for ${area}`, 502
-//     );
-//   }
-// };
-
-// export const getZoneWeatherObservations = async (
-//   zoneId,
-//   { start, end, limit } = {}
-// ) => {
-//   try {
-//     const { data } = await axios.get(
-//       `${WEATHER_API_BASE}/zones/forecast/${zoneId}/observations`,
-//       {
-//         params: {
-//           start,
-//           end,
-//           limit,
-//         },
-//       }
-//     );
-
-//     return data.features.map((obs) => ({
-//       timestamp: obs.properties.timestamp,
-//       temperature: obs.properties.temperature?.value ?? null,
-//       relativeHumidity: obs.properties.relativeHumidity?.value ?? null,
-//       windDirection: obs.properties.windDirection?.value ?? null,
-//       windSpeed: obs.properties.windSpeed?.value ?? null,
-//       windGust: obs.properties.windGust?.value ?? null,
-//       textDescription: obs.properties.textDescription,
-//     }));
-//   } catch (error) {
-//     throw new CustomError(
-//       `Failed to fetch weather observations for zone ${zoneId}`, 502
-//     );
-//   }
-// };
-
 import axios from "axios";
 import { CustomError } from "../utils/custom_error.js";
 
 const WEATHER_API_BASE = "https://api.weather.gov";
 
-/**
- * Fetch all zones from the weather API
- * @param {Object} options
- * @param {string} options.area - State/area code
- * @param {string} [options.type] - Zone type
- * @param {number} [options.limit=500] - Max number of zones
- * @param {string} [options.effective] - Effective date filter (ISO)
- * @param {boolean} [options.include_geometry=false] - Include geometry info
- */
 export const getAllZones = async ({
   area = "FL",
   type,

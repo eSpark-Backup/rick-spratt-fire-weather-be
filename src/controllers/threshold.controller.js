@@ -1,39 +1,8 @@
-// import { asyncWrapper } from "../utils/async_wrapper.js";
-// import * as response from "../utils/response.js";
-// import * as thresholdService from "../services/threshold.service.js";
-
-// const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
-//   const { tempMin, tempMax, rhMin, rhMax, windMin, windMax } = req.body;
-//   const userId = req.user.id;
-
-//   const threshold = await thresholdService.createOrUpdateThreshold(userId, {
-//     tempMin,
-//     tempMax,
-//     rhMin,
-//     rhMax,
-//     windMin,
-//     windMax,
-//   });
-
-//   response.success(res, threshold, "Threshold created/updated successfully");
-// });
-
-// const getThreshold = asyncWrapper(async (req, res) => {
-//   const userId = req.user.id;
-
-//   const threshold = await thresholdService.getUserThreshold(userId);
-
-//   response.success(res, threshold, "Threshold fetched successfully");
-// });
-
-// export { createOrUpdateThreshold, getThreshold };
-
 import { asyncWrapper } from "../utils/async_wrapper.js";
 import * as response from "../utils/response.js";
 import * as thresholdService from "../services/threshold.service.js";
 import { CustomError } from "../utils/custom_error.js";
 
-// Helper to validate required numeric fields
 const requireNumericFields = (body, fields) => {
   for (const field of fields) {
     if (
@@ -55,7 +24,6 @@ const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
   const { tempMin, tempMax, rhMin, rhMax, windMin, windMax } = req.body;
   const userId = req.user.id;
 
-  // Validate input fields
   requireNumericFields(req.body, [
     "tempMin",
     "tempMax",
@@ -65,7 +33,6 @@ const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
     "windMax",
   ]);
 
-  // Optional: validate logical consistency
   if (tempMin > tempMax)
     throw new CustomError(
       "tempMin cannot be greater than tempMax",

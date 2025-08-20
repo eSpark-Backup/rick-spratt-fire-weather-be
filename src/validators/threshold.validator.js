@@ -1,8 +1,8 @@
 import Joi from "joi";
 
 const baseSchema = {
-  tempMin: Joi.number().min(-50).max(60),
-  tempMax: Joi.number().min(-50).max(60),
+  tempMin: Joi.number().min(-50).max(90),
+  tempMax: Joi.number().min(-50).max(90),
   rhMin: Joi.number().min(0).max(100),
   rhMax: Joi.number().min(0).max(100),
   windMin: Joi.number().min(0).max(200),

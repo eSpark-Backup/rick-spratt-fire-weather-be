@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 
-const secret = process.env.JWT_SECRET || "default_jwt_secret"; // Replace in production
+const secret = process.env.JWT_SECRET || "default_jwt_secret";
 const expiresIn = "7d";
 
 const generateToken = (payload) => {
