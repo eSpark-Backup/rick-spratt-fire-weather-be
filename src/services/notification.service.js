@@ -1,4 +1,5 @@
 import admin from "firebase-admin";
+import { prisma } from "../prisma.js";
 import { CustomError } from "../utils/custom_error.js";
 
 let serviceAccount;
@@ -34,6 +35,16 @@ export async function sendNotification(
     );
     return;
   }
+
+  await prisma.notification.create({
+    data: {
+      userId: user.id,
+      title: "Weather Alert",
+      body: message,
+      type: "weather_alert",
+      severity: "high",
+    },
+  });
 
   const payload = {
     token: user.deviceToken,
