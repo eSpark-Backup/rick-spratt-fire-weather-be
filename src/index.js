@@ -8,6 +8,7 @@ import "./jobs/weather.job.js";
 import { authRoutes } from "./routes/auth.routes.js";
 import { weatherRoutes } from "./routes/weather.routes.js";
 import { thresholdRoutes } from "./routes/threshold.routes.js";
+import { notificationRoutes } from "./routes/notification.routes.js";
 import { errorHandler } from "./middlewares/error_handler.js";
 import { swaggerUi, swaggerSpec } from "./swagger.js";
 
@@ -29,13 +30,13 @@ app.use("/api/weather", weatherRoutes);
 
 app.use("/api/threshold", thresholdRoutes);
 
+app.use("/api/notifications", notificationRoutes);
 
 app.use(errorHandler);
 
 app.get("/", (_req, res) => {
   res.json({ message: "Hello, world!" });
 });
-
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);

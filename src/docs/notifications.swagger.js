@@ -12,6 +12,21 @@
  *     summary: "Get all notifications for the logged-in user"
  *     tags:
  *       - Notifications
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *           minimum: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *           minimum: 1
+ *         description: Number of notifications per page
  *     responses:
  *       200:
  *         description: Notifications fetched successfully

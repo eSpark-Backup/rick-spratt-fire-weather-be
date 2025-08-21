@@ -36,7 +36,7 @@ export async function sendNotification(
     return;
   }
 
-  await prisma.notification.create({
+  const notification = await prisma.notification.create({
     data: {
       userId: user.id,
       title: "Weather Alert",
@@ -45,6 +45,11 @@ export async function sendNotification(
       severity: "high",
     },
   });
+
+  console.log(
+    `[DB] Notification stored for ${user.email || user.id}:`,
+    notification
+  );
 
   const payload = {
     token: user.deviceToken,
