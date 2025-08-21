@@ -8,31 +8,51 @@ datasource db {
 }
 
 model User {
-  id          String      @id @default(uuid())
-  firstName   String
-  lastName    String
-  email       String      @unique
-  password    String
-  country     String      @default("US")
-  state       String      @default("Florida")
-  zoneId      String
-  deviceToken String?
-  lastLoginAt DateTime?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  Threshold   Threshold?
+  id           String         @id @default(uuid())
+  firstName    String
+  lastName     String
+  email        String         @unique
+  password     String
+  country      String         @default("US")
+  state        String         @default("Florida")
+  zoneId       String
+  deviceToken  String?
+  lastLoginAt  DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  Threshold    Threshold?
+  Notification Notification[]
 }
 
 model Threshold {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tempMin   Int?
-  tempMax   Int?
-  rhMin     Int?
-  rhMax     Int?
-  windMin   Int?
-  windMax   Int?
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  temperature Int?
+  humidity    Int?
+  windSpeed   Int?
+
+  southDir Int?
+  northDir Int?
+  eastDir  Int?
+  westDir  Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title    String
+  body     String
+  type     String  @default("weather_alert") // e.g. weather_alert, system, info
+  severity String? // e.g. high, medium, low
+  isRead   Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

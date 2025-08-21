@@ -24,49 +24,65 @@ function checkThresholds(obs, threshold) {
   const alerts = [];
 
   if (
-    threshold.tempMin !== null &&
+    threshold.temperature !== null &&
     obs.temperature !== null &&
-    obs.temperature < threshold.tempMin
+    obs.temperature > threshold.temperature
   ) {
-    alerts.push(`Temperature dropped below ${threshold.tempMin}°C`);
-  }
-  if (
-    threshold.tempMax !== null &&
-    obs.temperature !== null &&
-    obs.temperature > threshold.tempMax
-  ) {
-    alerts.push(`Temperature exceeded ${threshold.tempMax}°C`);
+    alerts.push(`Temperature exceeded ${threshold.temperature}°C`);
   }
 
   if (
-    threshold.rhMin !== null &&
+    threshold.humidity !== null &&
     obs.relativeHumidity !== null &&
-    obs.relativeHumidity < threshold.rhMin
+    obs.relativeHumidity > threshold.humidity
   ) {
-    alerts.push(`Humidity dropped below ${threshold.rhMin}%`);
-  }
-  if (
-    threshold.rhMax !== null &&
-    obs.relativeHumidity !== null &&
-    obs.relativeHumidity > threshold.rhMax
-  ) {
-    alerts.push(`Humidity exceeded ${threshold.rhMax}%`);
+    alerts.push(`Humidity exceeded ${threshold.humidity}%`);
   }
 
   if (
-    threshold.windMax !== null &&
+    threshold.windSpeed !== null &&
     obs.windSpeed !== null &&
-    obs.windSpeed > threshold.windMax
+    obs.windSpeed > threshold.windSpeed
   ) {
-    alerts.push(`Wind speed exceeded ${threshold.windMax} Km/h`);
+    alerts.push(`Wind speed exceeded ${threshold.windSpeed} Km/h`);
   }
 
-  if (
-    threshold.windMin !== null &&
-    obs.windSpeed !== null &&
-    obs.windSpeed < threshold.windMin
-  ) {
-    alerts.push(`Wind speed dropped below ${threshold.windMin} Km/h`);
+  if (obs.windDirection !== null && obs.windSpeed !== null) {
+    const degree = obs.windDirection;
+    let direction;
+
+    if (degree >= 45 && degree < 135) {
+      direction = "E";
+    } else if (degree >= 135 && degree < 225) {
+      direction = "S";
+    } else if (degree >= 225 && degree < 315) {
+      direction = "W";
+    } else {
+      direction = "N";
+    }
+
+    switch (direction) {
+      case "N":
+        if (threshold.northDir !== null && obs.windSpeed > threshold.northDir) {
+          alerts.push(`North wind exceeded ${threshold.northDir} Km/h`);
+        }
+        break;
+      case "S":
+        if (threshold.southDir !== null && obs.windSpeed > threshold.southDir) {
+          alerts.push(`South wind exceeded ${threshold.southDir} Km/h`);
+        }
+        break;
+      case "E":
+        if (threshold.eastDir !== null && obs.windSpeed > threshold.eastDir) {
+          alerts.push(`East wind exceeded ${threshold.eastDir} Km/h`);
+        }
+        break;
+      case "W":
+        if (threshold.westDir !== null && obs.windSpeed > threshold.westDir) {
+          alerts.push(`West wind exceeded ${threshold.westDir} Km/h`);
+        }
+        break;
+    }
   }
 
   return alerts;

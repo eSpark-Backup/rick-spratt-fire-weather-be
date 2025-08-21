@@ -1,19 +1,22 @@
 import Joi from "joi";
 
 const baseSchema = {
-  tempMin: Joi.number().min(-50).max(90),
-  tempMax: Joi.number().min(-50).max(90),
-  rhMin: Joi.number().min(0).max(100),
-  rhMax: Joi.number().min(0).max(100),
-  windMin: Joi.number().min(0).max(200),
-  windMax: Joi.number().min(0).max(200),
+  temperature: Joi.number().min(-50).max(90),
+  humidity: Joi.number().min(0).max(100),
+  windSpeed: Joi.number().min(0).max(200),
+
+  southDir: Joi.number().min(0).max(100),
+  northDir: Joi.number().min(0).max(100),
+  eastDir: Joi.number().min(0).max(100),
+  westDir: Joi.number().min(0).max(100),
 };
 
 export const createThresholdValidator = Joi.object({
-  tempMin: baseSchema.tempMin.required(),
-  tempMax: baseSchema.tempMax.required(),
-  rhMin: baseSchema.rhMin.required(),
-  rhMax: baseSchema.rhMax.required(),
-  windMin: baseSchema.windMin.required(),
-  windMax: baseSchema.windMax.required(),
+  temperature: baseSchema.temperature.required(),
+  humidity: baseSchema.humidity.required(),
+  windSpeed: baseSchema.windSpeed.required(),
+  southDir: baseSchema.southDir.required(),
+  northDir: baseSchema.northDir.required(),
+  eastDir: baseSchema.eastDir.required(),
+  westDir: baseSchema.westDir.required(),
 });

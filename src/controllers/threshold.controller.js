@@ -21,47 +21,35 @@ const requireNumericFields = (body, fields) => {
 };
 
 const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
-  const { tempMin, tempMax, rhMin, rhMax, windMin, windMax } = req.body;
+  const {
+    temperature,
+    humidity,
+    windSpeed,
+    southDir,
+    northDir,
+    eastDir,
+    westDir,
+  } = req.body;
   const userId = req.user.id;
 
   requireNumericFields(req.body, [
-    "tempMin",
-    "tempMax",
-    "rhMin",
-    "rhMax",
-    "windMin",
-    "windMax",
+    "temperature",
+    "humidity",
+    "windSpeed",
+    "southDir",
+    "northDir",
+    "eastDir",
+    "westDir",
   ]);
 
-  if (tempMin > tempMax)
-    throw new CustomError(
-      "tempMin cannot be greater than tempMax",
-      400,
-      "LOGIC_ERROR",
-      { field: "tempMin" }
-    );
-  if (rhMin > rhMax)
-    throw new CustomError(
-      "rhMin cannot be greater than rhMax",
-      400,
-      "LOGIC_ERROR",
-      { field: "rhMin" }
-    );
-  if (windMin > windMax)
-    throw new CustomError(
-      "windMin cannot be greater than windMax",
-      400,
-      "LOGIC_ERROR",
-      { field: "windMin" }
-    );
-
   const threshold = await thresholdService.createOrUpdateThreshold(userId, {
-    tempMin,
-    tempMax,
-    rhMin,
-    rhMax,
-    windMin,
-    windMax,
+    temperature,
+    humidity,
+    windSpeed,
+    southDir,
+    northDir,
+    eastDir,
+    westDir,
   });
 
   response.success(res, threshold, "Threshold created/updated successfully");

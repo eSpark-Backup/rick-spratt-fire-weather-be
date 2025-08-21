@@ -5,41 +5,49 @@
  *     Threshold:
  *       type: object
  *       required:
- *         - tempMin
- *         - tempMax
- *         - rhMin
- *         - rhMax
- *         - windMin
- *         - windMax
+ *         - temperature
+ *         - humidity
+ *         - windSpeed
+ *         - southDir
+ *         - northDir
+ *         - eastDir
+ *         - westDir
  *       properties:
- *         tempMin:
+ *         temperature:
  *           type: number
- *           description: Minimum temperature threshold in °C
- *           example: -5
- *         tempMax:
- *           type: number
- *           description: Maximum temperature threshold in °C
- *           example: 35
- *         rhMin:
- *           type: number
- *           description: Minimum relative humidity threshold in %
- *           example: 20
- *         rhMax:
- *           type: number
- *           description: Maximum relative humidity threshold in %
+ *           description: Temperature threshold in °C
  *           example: 80
- *         windMin:
+ *         humidity:
  *           type: number
- *           description: Minimum wind speed threshold in m/s
- *           example: 5
- *         windMax:
+ *           description: Relative humidity threshold in %
+ *           example: 40
+ *         windSpeed:
  *           type: number
- *           description: Maximum wind speed threshold in m/s
- *           example: 25
+ *           description: Wind speed threshold in Km/h
+ *           example: 15
+ *         southDir:
+ *           type: number
+ *           description: South wind speed threshold in Km/h
+ *           example: 75
+ *         northDir:
+ *           type: number
+ *           description: North wind speed threshold in Km/h
+ *           example: 75
+ *         eastDir:
+ *           type: number
+ *           description: East wind speed threshold in Km/h
+ *           example: 75
+ *         westDir:
+ *           type: number
+ *           description: West wind speed threshold in Km/h
+ *           example: 75
  *
  *     ThresholdResponse:
  *       type: object
  *       properties:
- *         threshold:
+ *         data:
  *           $ref: '#/components/schemas/Threshold'
+ *         message:
+ *           type: string
+ *           example: Threshold fetched successfully
  */
