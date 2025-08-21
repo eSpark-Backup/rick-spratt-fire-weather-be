@@ -64,7 +64,7 @@ const markAsRead = asyncWrapper(async (req, res) => {
 
   const updatedNotification = await prisma.notification.update({
     where: { id },
-    data: { isRead: true },
+    data: { isRead: !notification.isRead },
   });
 
   response.success(

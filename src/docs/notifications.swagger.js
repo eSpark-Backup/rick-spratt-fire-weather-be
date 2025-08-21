@@ -52,12 +52,6 @@
  *         schema:
  *           type: string
  *         description: "Notification ID"
- *       - in: query
- *         name: isRead
- *         schema:
- *           type: boolean
- *           example: true
- *         description: "Set true to mark as read, false to mark as unread"
  *     responses:
  *       200:
  *         description: Notification updated successfully
