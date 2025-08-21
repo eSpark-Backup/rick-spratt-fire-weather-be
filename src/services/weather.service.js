@@ -94,8 +94,6 @@ export const getZoneWeatherObservations = async (
       relativeHumidity: obs.properties.relativeHumidity?.value ?? null,
       windDirection: obs.properties.windDirection?.value ?? null,
       windSpeed: obs.properties.windSpeed?.value ?? null,
-      windGust: obs.properties.windGust?.value ?? null,
-      textDescription: obs.properties.textDescription,
     }));
   } catch (error) {
     console.error("Weather Service - getZoneWeatherObservations Error:", {

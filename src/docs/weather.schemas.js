@@ -43,24 +43,15 @@
  *         temperature:
  *           type: number
  *           example: 27
- *         temperatureUnit:
- *           type: string
- *           example: "C"
  *         windSpeed:
  *           type: number
  *           example: 9.25
  *         windDirection:
  *           type: number
  *           example: 170
- *         windGust:
- *           type: number
- *           example: 15
- *         relativeHumidity:
+ *         Humidity:
  *           type: number
  *           example: 89
- *         textDescription:
- *           type: string
- *           example: "Clear"
  *     ZonesResponse:
  *       type: object
  *       properties:
