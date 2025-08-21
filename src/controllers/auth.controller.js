@@ -58,7 +58,7 @@ const signUp = asyncWrapper(async (req, res) => {
   });
 
   const zone = await getZoneById(user.zoneId);
-  zoneName = zone?.name || null;
+  const zoneName = zone?.name || null;
 
   const defaultThreshold = {
     temperature: 30,
@@ -110,6 +110,9 @@ const login = asyncWrapper(async (req, res) => {
     data: { lastLoginAt: new Date() },
   });
 
+  const zone = await getZoneById(user.zoneId);
+  const zoneName = zone?.name || null;
+
   const token = generateToken({ userId: user.id, email: user.email });
 
   response.success(
@@ -122,6 +125,7 @@ const login = asyncWrapper(async (req, res) => {
       country: user.country,
       state: user.state,
       zoneId: user.zoneId,
+      zoneName,
       lastLoginAt: user.lastLoginAt,
       token,
     },
