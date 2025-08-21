@@ -9,15 +9,9 @@ import {
 
 const router = express.Router();
 
-router.get(
-  "/zones",
-  authenticate,
-  validate(getZonesValidator, "query"),
-  getZones
-);
+router.get("/zones", validate(getZonesValidator, "query"), getZones);
 router.get(
   "/zones/forecast/:zoneId/observations",
-  authenticate,
   validate(getWeatherValidator, "params"),
   getWeather
 );
