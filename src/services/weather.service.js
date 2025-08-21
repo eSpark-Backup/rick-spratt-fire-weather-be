@@ -115,3 +115,10 @@ export const getZoneWeatherObservations = async (
     );
   }
 };
+
+export const getZoneById = async (zoneId) => {
+  if (!zoneId)
+    throw new CustomError("zoneId required", 400, "VALIDATION_ERROR");
+  const zones = await getAllZones({ limit: 500 }); // or filter by area if needed
+  return zones.find((z) => z.id === zoneId) || null;
+};

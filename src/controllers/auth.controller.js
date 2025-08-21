@@ -4,6 +4,8 @@ import { generateToken } from "../utils/token.js";
 import { asyncWrapper } from "../utils/async_wrapper.js";
 import { CustomError } from "../utils/custom_error.js";
 import * as response from "../utils/response.js";
+import { getZoneById } from "../services/weather.service.js";
+import * as thresholdService from "../services/threshold.service.js";
 
 const requireFields = (body, fields) => {
   for (const field of fields) {
@@ -55,6 +57,21 @@ const signUp = asyncWrapper(async (req, res) => {
     },
   });
 
+  const zone = await getZoneById(user.zoneId);
+  zoneName = zone?.name || null;
+
+  const defaultThreshold = {
+    temperature: 30,
+    humidity: 50,
+    windSpeed: 10,
+    southDir: 0,
+    northDir: 0,
+    eastDir: 0,
+    westDir: 0,
+  };
+
+  await thresholdService.createOrUpdateThreshold(user.id, defaultThreshold);
+
   const token = generateToken({ userId: user.id, email: user.email });
 
   response.success(
@@ -67,6 +84,7 @@ const signUp = asyncWrapper(async (req, res) => {
       country: user.country,
       state: user.state,
       zoneId: user.zoneId,
+      zoneName,
       token,
     },
     "User registered successfully"
