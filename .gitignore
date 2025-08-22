@@ -3,5 +3,5 @@ node_modules
 .env
 
 /generated/prisma
-./src/jobs/weather.job.for.testing.js
-fire-weather-sms-alert-firebase-adminsdk-fbsvc-af453a078e.json
+fire-weather-sms-alert-app-firebase-adminsdk-fbsvc-13094e7aa8.json
+src/tests
