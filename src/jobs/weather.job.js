@@ -87,7 +87,6 @@ function checkThresholds(obs, threshold) {
 
   return alerts;
 }
-
 cron.schedule("0 */3 * * *", async () => {
   console.log("[CRON] Running optimized weather threshold check...");
 

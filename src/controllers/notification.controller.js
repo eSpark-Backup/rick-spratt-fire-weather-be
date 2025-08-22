@@ -26,24 +26,30 @@ const getNotifications = asyncWrapper(async (req, res) => {
   requirePositiveNumber(page, "page");
   requirePositiveNumber(limit, "limit");
 
+  const total = await prisma.notification.count({
+    where: { userId },
+  });
+
   const notifications = await prisma.notification.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
+    skip: (page - 1) * limit,
+    take: Number(limit),
   });
 
-  if (!notifications || notifications.length === 0) {
-    throw new CustomError("No notifications found", 404, "NOT_FOUND", {
-      userId,
-    });
-  }
+  const message =
+    notifications.length === 0
+      ? "No new notifications"
+      : "Notifications fetched successfully";
 
-  const paginatedResult = paginate(notifications, page, limit);
+  const meta = {
+    page: Number(page),
+    limit: Number(limit),
+    total,
+    totalPages: Math.ceil(total / limit),
+  };
 
-  response.success(
-    res,
-    { notifications: paginatedResult.items, meta: paginatedResult.meta },
-    "Notifications fetched successfully"
-  );
+  response.success(res, { notifications, meta }, message);
 });
 
 const markAsRead = asyncWrapper(async (req, res) => {
@@ -58,8 +64,8 @@ const markAsRead = asyncWrapper(async (req, res) => {
     where: { id },
   });
 
-  if (!notification || notification.userId !== userId) {
-    throw new CustomError("Notification not found", 404, "NOT_FOUND", { id });
+  if (!notification) {
+    return response.success(res, {}, "No notifications found");
   }
 
   const updatedNotification = await prisma.notification.update({
@@ -70,7 +76,7 @@ const markAsRead = asyncWrapper(async (req, res) => {
   response.success(
     res,
     { notification: updatedNotification },
-    "Notification marked as read"
+    "Notification marked as read successfully"
   );
 });
 
@@ -82,18 +88,23 @@ const deleteNotification = asyncWrapper(async (req, res) => {
   });
 
   if (notification.count === 0) {
-    throw new CustomError("Notification not found", 404, "NOT_FOUND", { id });
+    return response.success(res, {}, "No notifications found");
   }
 
   response.success(res, {}, "Notification deleted successfully");
 });
 
 const clearAllNotifications = asyncWrapper(async (req, res) => {
-  await prisma.notification.deleteMany({
+  const deleted = await prisma.notification.deleteMany({
     where: { userId: req.user.id },
   });
 
-  response.success(res, {}, "All notifications cleared successfully");
+  const message =
+    deleted.count === 0
+      ? "No notifications found"
+      : "All notifications cleared successfully";
+
+  response.success(res, {}, message);
 });
 
 export {
