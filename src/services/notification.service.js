@@ -2,54 +2,89 @@ import admin from "firebase-admin";
 import { prisma } from "../prisma.js";
 import { CustomError } from "../utils/custom_error.js";
 
-let serviceAccount;
-try {
-  serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
-  serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, "\n");
-} catch (err) {
-  console.error("[FCM] Invalid FIREBASE_CONFIG:", err.message);
-  throw new CustomError(
-    "Failed to parse Firebase config",
-    500,
-    "FCM_CONFIG_ERROR",
-    { originalError: err.message }
-  );
-}
+let firebaseInitialized = false;
+let parsedServiceAccount = null;
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-  console.log("[FCM] Firebase Admin initialized");
-}
+function safeParseFirebaseConfig() {
+  if (parsedServiceAccount) return parsedServiceAccount;
 
-export async function sendNotification(
-  user,
-  message,
-  maxRetries = 2,
-  retryDelay = 1000
-) {
-  if (!user?.deviceToken) {
-    console.warn(
-      `[FCM] Skipped: No deviceToken for user ${user?.email || user?.id}`
+  const raw = process.env.FIREBASE_CONFIG;
+  if (!raw) {
+    throw new CustomError(
+      "Missing FIREBASE_CONFIG environment variable",
+      500,
+      "FCM_CONFIG_MISSING"
     );
-    return;
   }
 
-  const notification = await prisma.notification.create({
-    data: {
-      userId: user.id,
-      title: "Weather Alert",
-      body: message,
-      type: "weather_alert",
-      severity: "high",
-    },
-  });
+  let obj;
+  try {
+    obj = JSON.parse(raw);
+  } catch (err) {
+    throw new CustomError(
+      "Failed to parse FIREBASE_CONFIG JSON",
+      500,
+      "FCM_CONFIG_PARSE_ERROR",
+      { originalError: String(err) }
+    );
+  }
 
-  console.log(
-    `[DB] Notification stored for ${user.email || user.id}:`,
-    notification
-  );
+  if (obj.private_key && typeof obj.private_key === "string") {
+    obj.private_key = obj.private_key.replace(/\\n/g, "\n");
+  } else if (obj.privateKey && typeof obj.privateKey === "string") {
+    obj.privateKey = obj.privateKey.replace(/\\n/g, "\n");
+  } else {
+    console.warn("[FCM] FIREBASE_CONFIG missing private_key field.");
+  }
+
+  parsedServiceAccount = obj;
+  return parsedServiceAccount;
+}
+
+function initFirebaseIfNeeded() {
+  if (firebaseInitialized) return;
+
+  const sa = safeParseFirebaseConfig();
+
+  try {
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert(sa),
+      });
+      console.log("[FCM] Firebase Admin initialized");
+    }
+    firebaseInitialized = true;
+  } catch (err) {
+    console.error("[FCM] Firebase initialization failed:", String(err));
+    throw new CustomError(
+      "Failed to initialize Firebase Admin",
+      500,
+      "FCM_INIT_ERROR",
+      { originalError: String(err) }
+    );
+  }
+}
+
+/**
+ * Send push notification to a single user
+ */
+export async function sendNotification(user, message) {
+  if (!user || !user.id) {
+    throw new CustomError("Invalid user provided", 400, "FCM_INVALID_USER");
+  }
+
+  if (!user.deviceToken || typeof user.deviceToken !== "string") {
+    console.warn(
+      `[FCM] Skipped: No deviceToken for user ${user.email || user.id}`
+    );
+    return { skipped: true, reason: "no_device_token" };
+  }
+
+  if (!message || typeof message !== "string") {
+    throw new CustomError("Invalid message", 400, "FCM_INVALID_MESSAGE");
+  }
+
+  initFirebaseIfNeeded();
 
   const payload = {
     token: user.deviceToken,
@@ -61,35 +96,61 @@ export async function sendNotification(
       type: "weather_alert",
       severity: "high",
     },
+    android: { priority: "high" },
+    apns: { headers: { "apns-priority": "10" } },
   };
 
-  for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
-    try {
-      const response = await admin.messaging().send(payload);
-      console.log(`[FCM] Sent to ${user.email || user.id}:`, response);
-      break;
-    } catch (err) {
-      const isLastAttempt = attempt > maxRetries;
-      console.warn(
-        `[FCM] Attempt ${attempt} for user ${user.email || user.id} failed: ${
-          err.message
-        }`
-      );
+  try {
+    const fcmResponse = await admin.messaging().send(payload);
+    console.log(`[FCM] Sent to ${user.email || user.id}:`, fcmResponse);
 
-      if (isLastAttempt) {
-        console.error(`[FCM] Failed to send after ${maxRetries + 1} attempts`, {
-          userId: user.id,
-          error: err.message,
-        });
-        throw new CustomError(
-          "Failed to send notification",
-          500,
-          "FCM_SEND_ERROR",
-          { userId: user.id, originalError: err.message }
-        );
-      } else {
-        await new Promise((res) => setTimeout(res, retryDelay));
-      }
-    }
+    const notification = await prisma.notification.create({
+      data: {
+        userId: user.id,
+        title: "Weather Alert",
+        body: message,
+        type: "weather_alert",
+        severity: "high",
+      },
+    });
+
+    return { success: true, userId: user.id, notificationId: notification.id };
+  } catch (err) {
+    console.error(`[FCM] Failed for user ${user.id}:`, err.message);
+    return { success: false, userId: user.id, error: err.message };
   }
+}
+
+/**
+ * Send notification to all currently logged-in users (parallelized)
+ */
+export async function sendNotificationToAllLoggedInUsers(message) {
+  if (!message || typeof message !== "string") {
+    throw new CustomError("Invalid message", 400, "FCM_INVALID_MESSAGE");
+  }
+
+  // get logged-in users with deviceToken
+  const users = await prisma.user.findMany({
+    where: { deviceToken: { not: null } }, // assuming this means logged in
+    select: { id: true, email: true, deviceToken: true },
+  });
+
+  if (!users.length) {
+    console.log("[FCM] No logged-in users with device tokens");
+    return [];
+  }
+
+  console.log(`[FCM] Sending notifications to ${users.length} users...`);
+
+  const results = await Promise.allSettled(
+    users.map((user) => sendNotification(user, message))
+  );
+
+  return results.map((res, i) => ({
+    userId: users[i].id,
+    status: res.status,
+    ...(res.status === "fulfilled"
+      ? res.value
+      : { error: res.reason?.message }),
+  }));
 }

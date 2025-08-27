@@ -1,23 +1,23 @@
 import cron from "node-cron";
 import { prisma } from "../prisma.js";
 import { getZoneWeatherObservations } from "../services/weather.service.js";
-import { sendNotification } from "../services/notification.service.js";
+import { sendNotificationToAllLoggedInUsers } from "../services/notification.service.js";
 
 const lastAlertsCache = new Map();
 const ALERT_CACHE_TTL = 60 * 60 * 1000;
 
-function setAlertCache(userId, cacheKey) {
-  lastAlertsCache.set(userId, { key: cacheKey, timestamp: Date.now() });
+function setAlertCache(cacheKey) {
+  lastAlertsCache.set(cacheKey, Date.now());
 }
 
-function getAlertCache(userId) {
-  const entry = lastAlertsCache.get(userId);
-  if (!entry) return null;
-  if (Date.now() - entry.timestamp > ALERT_CACHE_TTL) {
-    lastAlertsCache.delete(userId);
+function getAlertCache(cacheKey) {
+  const timestamp = lastAlertsCache.get(cacheKey);
+  if (!timestamp) return null;
+  if (Date.now() - timestamp > ALERT_CACHE_TTL) {
+    lastAlertsCache.delete(cacheKey);
     return null;
   }
-  return entry.key;
+  return cacheKey;
 }
 
 function checkThresholds(obs, threshold) {
@@ -87,12 +87,14 @@ function checkThresholds(obs, threshold) {
 
   return alerts;
 }
+
 cron.schedule("0 */3 * * *", async () => {
   console.log("[CRON] Running optimized weather threshold check...");
 
   try {
     const batchSize = 20;
     let skip = 0;
+    const triggeredAlerts = [];
 
     while (true) {
       const users = await prisma.user.findMany({
@@ -112,29 +114,24 @@ cron.schedule("0 */3 * * *", async () => {
 
             const latestObs = observations[0];
             if (!latestObs) {
-              console.warn(
-                `[CRON] No weather observation for user ${user.email}`
-              );
+              console.warn(`[CRON] No weather observation for ${user.email}`);
               return;
             }
 
             const alerts = checkThresholds(latestObs, user.Threshold);
 
             if (alerts.length > 0) {
-              const cacheKey = `${user.id}:${alerts.join("|")}`;
-              const lastAlert = getAlertCache(user.id);
+              const cacheKey = `${user.zoneId}:${alerts.join("|")}`;
+              const lastAlert = getAlertCache(cacheKey);
 
               if (lastAlert !== cacheKey) {
-                await sendNotification(user, alerts.join("; "));
-                setAlertCache(user.id, cacheKey);
-                console.log(
-                  `[ALERT] Sent to ${user.email}: ${alerts.join("; ")}`
-                );
+                triggeredAlerts.push(alerts.join("; "));
+                setAlertCache(cacheKey);
               }
             }
           } catch (err) {
             console.error(
-              `[CRON] Weather fetch failed for user ${user.email}:`,
+              `[CRON] Weather fetch failed for ${user.email}:`,
               err.message
             );
           }
@@ -142,6 +139,12 @@ cron.schedule("0 */3 * * *", async () => {
       );
 
       skip += batchSize;
+    }
+
+    if (triggeredAlerts.length > 0) {
+      const uniqueMessage = [...new Set(triggeredAlerts)].join(" | ");
+      await sendNotificationToAllLoggedInUsers(uniqueMessage);
+      console.log(`[ALERT] Broadcasted: ${uniqueMessage}`);
     }
   } catch (err) {
     console.error("[CRON] Job failed:", err.message);
