@@ -1,5 +1,12 @@
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
+import path from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const swaggerSpec = swaggerJsDoc({
   definition: {
@@ -24,7 +31,7 @@ const swaggerSpec = swaggerJsDoc({
       },
     ],
   },
-  apis: ["./src/docs/*.js"],
+  apis: [path.join(__dirname, "docs", "*.js")],
 });
 
 export { swaggerUi, swaggerSpec };
