@@ -34,9 +34,9 @@ function checkThresholds(obs, threshold) {
   if (
     threshold.humidity !== null &&
     obs.relativeHumidity !== null &&
-    obs.relativeHumidity > threshold.humidity
+    obs.relativeHumidity < threshold.humidity
   ) {
-    alerts.push(`Humidity exceeded ${threshold.humidity}%`);
+    alerts.push(`Humidity below minimum ${threshold.humidity}%`);
   }
 
   if (
