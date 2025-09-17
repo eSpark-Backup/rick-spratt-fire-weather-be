@@ -72,22 +72,22 @@ function checkThresholds(obs, threshold) {
     switch (direction) {
       case "N":
         if (threshold.northDir !== null && obs.windSpeed > threshold.northDir) {
-          alerts.push(`North wind exceeded ${threshold.northDir} Km/h`);
+          alerts.push(`North wind exceeded ${threshold.northDir} mph`);
         }
         break;
       case "S":
         if (threshold.southDir !== null && obs.windSpeed > threshold.southDir) {
-          alerts.push(`South wind exceeded ${threshold.southDir} Km/h`);
+          alerts.push(`South wind exceeded ${threshold.southDir} mph`);
         }
         break;
       case "E":
         if (threshold.eastDir !== null && obs.windSpeed > threshold.eastDir) {
-          alerts.push(`East wind exceeded ${threshold.eastDir} Km/h`);
+          alerts.push(`East wind exceeded ${threshold.eastDir} mph`);
         }
         break;
       case "W":
         if (threshold.westDir !== null && obs.windSpeed > threshold.westDir) {
-          alerts.push(`West wind exceeded ${threshold.westDir} Km/h`);
+          alerts.push(`West wind exceeded ${threshold.westDir} mph`);
         }
         break;
     }
