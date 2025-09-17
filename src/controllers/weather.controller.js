@@ -35,7 +35,6 @@ const getZones = asyncWrapper(async (req, res) => {
   const zones = await getAllZones({
     area,
     type,
-    limit: 500,
     effective,
     include_geometry,
   });

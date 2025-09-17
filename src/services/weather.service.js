@@ -6,7 +6,6 @@ const WEATHER_API_BASE = "https://api.weather.gov";
 export const getAllZones = async ({
   area = "FL",
   type,
-  limit = 500,
   effective,
   include_geometry = false,
 } = {}) => {
@@ -20,7 +19,7 @@ export const getAllZones = async ({
       );
 
     const { data } = await axios.get(`${WEATHER_API_BASE}/zones`, {
-      params: { area, type, limit, effective, include_geometry },
+      params: { area, type, effective, include_geometry },
     });
 
     if (!data?.features || data.features.length === 0) {
@@ -208,6 +207,6 @@ export const getZoneWeatherObservations = async (
 export const getZoneById = async (zoneId) => {
   if (!zoneId)
     throw new CustomError("zoneId required", 400, "VALIDATION_ERROR");
-  const zones = await getAllZones({ limit: 500 }); // or filter by area if needed
+  const zones = await getAllZones();
   return zones.find((z) => z.id === zoneId) || null;
 };
