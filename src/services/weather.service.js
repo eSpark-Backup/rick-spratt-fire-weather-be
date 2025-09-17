@@ -161,16 +161,7 @@ export const getZoneWeatherObservations = async (
         deg == null
           ? null
           : (() => {
-              const dirs = [
-                "N",
-                "NE",
-                "E",
-                "SE",
-                "S",
-                "SW",
-                "W",
-                "NW",
-              ];
+              const dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
               return dirs[Math.round(deg / 45) % 8];
             })();
 
@@ -188,6 +179,7 @@ export const getZoneWeatherObservations = async (
         relativeHumidity: p.relativeHumidity?.value ?? null,
         // Compass direction instead of raw degrees
         windDirection: compass,
+        windDirectionValue: obs.properties.windDirection?.value ?? null,
         // Wind speed in mph
         windSpeedMph: windMph,
       };
@@ -212,7 +204,6 @@ export const getZoneWeatherObservations = async (
     );
   }
 };
-
 
 export const getZoneById = async (zoneId) => {
   if (!zoneId)

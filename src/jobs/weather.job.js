@@ -44,7 +44,15 @@ function checkThresholds(obs, threshold) {
     obs.windSpeed !== null &&
     obs.windSpeed > threshold.windSpeed
   ) {
-    alerts.push(`Wind speed exceeded ${threshold.windSpeed} Km/h`);
+    alerts.push(`Wind speed exceeded ${threshold.windSpeed} mph`);
+  }
+
+  if (obs.windSpeedMph !== null) {
+    if (obs.windSpeedMph < 5 || obs.windSpeedMph > 15) {
+      alerts.push(
+        `Wind speed out of safe range (5-15 mph): ${obs.windSpeedMph} mph`
+      );
+    }
   }
 
   if (obs.windDirection !== null && obs.windSpeed !== null) {
