@@ -8,10 +8,16 @@
  *         - temperature
  *         - humidity
  *         - windSpeed
+ *         - windSpeedMin
+ *         - windSpeedMax
  *         - southDir
  *         - northDir
  *         - eastDir
  *         - westDir
+ *         - northEastDir
+ *         - northWestDir
+ *         - southEastDir
+ *         - southWestDir
  *       properties:
  *         temperature:
  *           type: number
@@ -41,6 +47,31 @@
  *           type: number
  *           description: West wind speed threshold in Km/h
  *           example: 75
+ *         windSpeedMin:
+ *           type: number
+ *           description: Minimum wind speed threshold in Km/h
+ *           example: 5
+ *         windSpeedMax:
+ *           type: number
+ *           description: Maximum wind speed threshold in Km/h
+ *           example: 25
+ *         northEastDir:
+ *           type: number
+ *           description: North-East wind speed threshold in Km/h
+ *           example: 75
+ *         northWestDir:
+ *           type: number
+ *           description: North-West wind speed threshold in Km/h
+ *           example: 75
+ *         southEastDir:
+ *           type: number
+ *           description: South-East wind speed threshold in Km/h
+ *           example: 75
+ *         southWestDir:
+ *           type: number
+ *           description: South-West wind speed threshold in Km/h
+ *           example: 75
+ *
  *
  *     ThresholdResponse:
  *       type: object

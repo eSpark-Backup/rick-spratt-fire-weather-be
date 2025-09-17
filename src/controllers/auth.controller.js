@@ -64,10 +64,22 @@ const signUp = asyncWrapper(async (req, res) => {
     temperature: 30,
     humidity: 50,
     windSpeed: 10,
+
+    // new min/max wind speed range
+    windSpeedMin: 0,
+    windSpeedMax: 20,
+
+    // cardinal directions
     southDir: 0,
     northDir: 0,
     eastDir: 0,
     westDir: 0,
+
+    // diagonal directions
+    northEastDir: 0,
+    northWestDir: 0,
+    southEastDir: 0,
+    southWestDir: 0,
   };
 
   await thresholdService.createOrUpdateThreshold(user.id, defaultThreshold);

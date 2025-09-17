@@ -40,11 +40,19 @@ function checkThresholds(obs, threshold) {
   }
 
   if (
-    threshold.windSpeed !== null &&
+    threshold.windSpeedMin !== null &&
     obs.windSpeed !== null &&
-    obs.windSpeed > threshold.windSpeed
+    obs.windSpeed < threshold.windSpeedMin
   ) {
-    alerts.push(`Wind speed exceeded ${threshold.windSpeed} mph`);
+    alerts.push(`Wind speed below minimum ${threshold.windSpeedMin} mph`);
+  }
+
+  if (
+    threshold.windSpeedMax !== null &&
+    obs.windSpeed !== null &&
+    obs.windSpeed > threshold.windSpeedMax
+  ) {
+    alerts.push(`Wind speed exceeded maximum ${threshold.windSpeedMax} mph`);
   }
 
   if (obs.windSpeedMph !== null) {
@@ -59,15 +67,15 @@ function checkThresholds(obs, threshold) {
     const degree = obs.windDirection;
     let direction;
 
-    if (degree >= 45 && degree < 135) {
-      direction = "E";
-    } else if (degree >= 135 && degree < 225) {
-      direction = "S";
-    } else if (degree >= 225 && degree < 315) {
-      direction = "W";
-    } else {
-      direction = "N";
-    }
+    // full 8-point compass
+    if (degree >= 337.5 || degree < 22.5) direction = "N";
+    else if (degree >= 22.5 && degree < 67.5) direction = "NE";
+    else if (degree >= 67.5 && degree < 112.5) direction = "E";
+    else if (degree >= 112.5 && degree < 157.5) direction = "SE";
+    else if (degree >= 157.5 && degree < 202.5) direction = "S";
+    else if (degree >= 202.5 && degree < 247.5) direction = "SW";
+    else if (degree >= 247.5 && degree < 292.5) direction = "W";
+    else if (degree >= 292.5 && degree < 337.5) direction = "NW";
 
     switch (direction) {
       case "N":
@@ -75,9 +83,12 @@ function checkThresholds(obs, threshold) {
           alerts.push(`North wind exceeded ${threshold.northDir} mph`);
         }
         break;
-      case "S":
-        if (threshold.southDir !== null && obs.windSpeed > threshold.southDir) {
-          alerts.push(`South wind exceeded ${threshold.southDir} mph`);
+      case "NE":
+        if (
+          threshold.northEastDir !== null &&
+          obs.windSpeed > threshold.northEastDir
+        ) {
+          alerts.push(`NE wind exceeded ${threshold.northEastDir} mph`);
         }
         break;
       case "E":
@@ -85,9 +96,38 @@ function checkThresholds(obs, threshold) {
           alerts.push(`East wind exceeded ${threshold.eastDir} mph`);
         }
         break;
+      case "SE":
+        if (
+          threshold.southEastDir !== null &&
+          obs.windSpeed > threshold.southEastDir
+        ) {
+          alerts.push(`SE wind exceeded ${threshold.southEastDir} mph`);
+        }
+        break;
+      case "S":
+        if (threshold.southDir !== null && obs.windSpeed > threshold.southDir) {
+          alerts.push(`South wind exceeded ${threshold.southDir} mph`);
+        }
+        break;
+      case "SW":
+        if (
+          threshold.southWestDir !== null &&
+          obs.windSpeed > threshold.southWestDir
+        ) {
+          alerts.push(`SW wind exceeded ${threshold.southWestDir} mph`);
+        }
+        break;
       case "W":
         if (threshold.westDir !== null && obs.windSpeed > threshold.westDir) {
           alerts.push(`West wind exceeded ${threshold.westDir} mph`);
+        }
+        break;
+      case "NW":
+        if (
+          threshold.northWestDir !== null &&
+          obs.windSpeed > threshold.northWestDir
+        ) {
+          alerts.push(`NW wind exceeded ${threshold.northWestDir} mph`);
         }
         break;
     }

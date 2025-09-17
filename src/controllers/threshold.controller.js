@@ -25,31 +25,50 @@ const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
     temperature,
     humidity,
     windSpeed,
+    windSpeedMin,
+    windSpeedMax,
     southDir,
     northDir,
     eastDir,
     westDir,
+    northEastDir,
+    northWestDir,
+    southEastDir,
+    southWestDir,
   } = req.body;
+
   const userId = req.user.id;
 
   requireNumericFields(req.body, [
     "temperature",
     "humidity",
     "windSpeed",
+    "windSpeedMin",
+    "windSpeedMax",
     "southDir",
     "northDir",
     "eastDir",
     "westDir",
+    "northEastDir",
+    "northWestDir",
+    "southEastDir",
+    "southWestDir",
   ]);
 
   const threshold = await thresholdService.createOrUpdateThreshold(userId, {
     temperature,
     humidity,
     windSpeed,
+    windSpeedMin,
+    windSpeedMax,
     southDir,
     northDir,
     eastDir,
     westDir,
+    northEastDir,
+    northWestDir,
+    southEastDir,
+    southWestDir,
   });
 
   response.success(res, threshold, "Threshold created/updated successfully");

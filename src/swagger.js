@@ -10,10 +10,10 @@ const __dirname = dirname(__filename);
 
 const swaggerSpec = swaggerJsDoc({
   definition: {
-    openapi: "3.0.0",
+    openapi: "3.0.1",
     info: {
       title: "Fire Weather SMS Alert App",
-      version: "1.0.0",
+      version: "1.0.1",
       description: "API documentation for the Fire Weather SMS Alert App",
     },
     components: {
