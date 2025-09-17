@@ -59,6 +59,63 @@ export const getAllZones = async ({
   }
 };
 
+// export const getZoneWeatherObservations = async (
+//   zoneId,
+//   { start, end, limit = 500 } = {}
+// ) => {
+//   try {
+//     if (!zoneId)
+//       throw new CustomError(
+//         "zoneId parameter is required",
+//         400,
+//         "VALIDATION_ERROR",
+//         { zoneId }
+//       );
+
+//     const { data } = await axios.get(
+//       `${WEATHER_API_BASE}/zones/forecast/${zoneId}/observations`,
+//       {
+//         params: { start, end, limit },
+//       }
+//     );
+
+//     if (!data?.features || data.features.length === 0) {
+//       throw new CustomError(
+//         `No weather observations found for zone ${zoneId}`,
+//         404,
+//         "NOT_FOUND",
+//         { zoneId }
+//       );
+//     }
+
+//     return data.features.map((obs) => ({
+//       timestamp: obs.properties.timestamp,
+//       temperature: obs.properties.temperature?.value ?? null,
+//       relativeHumidity: obs.properties.relativeHumidity?.value ?? null,
+//       windDirection: obs.properties.windDirection?.value ?? null,
+//       windSpeed: obs.properties.windSpeed?.value ?? null,
+//     }));
+//   } catch (error) {
+//     console.error("Weather Service - getZoneWeatherObservations Error:", {
+//       zoneId,
+//       start,
+//       end,
+//       limit,
+//       originalError: error.message,
+//       stack: error.stack,
+//     });
+
+//     if (error instanceof CustomError) throw error;
+
+//     throw new CustomError(
+//       `Failed to fetch weather observations for zone ${zoneId}`,
+//       502,
+//       "WEATHER_API_ERROR",
+//       { zoneId, start, end, originalError: error.message }
+//     );
+//   }
+// };
+
 export const getZoneWeatherObservations = async (
   zoneId,
   { start, end, limit = 500 } = {}
@@ -88,13 +145,53 @@ export const getZoneWeatherObservations = async (
       );
     }
 
-    return data.features.map((obs) => ({
-      timestamp: obs.properties.timestamp,
-      temperature: obs.properties.temperature?.value ?? null,
-      relativeHumidity: obs.properties.relativeHumidity?.value ?? null,
-      windDirection: obs.properties.windDirection?.value ?? null,
-      windSpeed: obs.properties.windSpeed?.value ?? null,
-    }));
+    // ── Backend transformations for client feedback ──
+    return data.features.map((obs) => {
+      const p = obs.properties;
+
+      // convert °C → °F (round to 1 decimal)
+      const tempF =
+        p.temperature?.value != null
+          ? (p.temperature.value * 9) / 5 + 32
+          : null;
+
+      // compute compass direction from degrees
+      const deg = p.windDirection?.value;
+      const compass =
+        deg == null
+          ? null
+          : (() => {
+              const dirs = [
+                "N",
+                "NE",
+                "E",
+                "SE",
+                "S",
+                "SW",
+                "W",
+                "NW",
+              ];
+              return dirs[Math.round(deg / 45) % 8];
+            })();
+
+      // convert km/h → mph
+      const windMph =
+        p.windSpeed?.value != null
+          ? +(p.windSpeed.value * 0.621371).toFixed(1)
+          : null;
+
+      return {
+        timestamp: p.timestamp,
+        // Temperature returned in Fahrenheit
+        temperatureF: tempF,
+        // For min humidity calculation downstream; keep value as-is
+        relativeHumidity: p.relativeHumidity?.value ?? null,
+        // Compass direction instead of raw degrees
+        windDirection: compass,
+        // Wind speed in mph
+        windSpeedMph: windMph,
+      };
+    });
   } catch (error) {
     console.error("Weather Service - getZoneWeatherObservations Error:", {
       zoneId,
@@ -115,6 +212,7 @@ export const getZoneWeatherObservations = async (
     );
   }
 };
+
 
 export const getZoneById = async (zoneId) => {
   if (!zoneId)
