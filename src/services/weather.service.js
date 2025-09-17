@@ -91,7 +91,7 @@ export const getZoneWeatherObservations = async (
     return data.features.map((obs) => ({
       timestamp: obs.properties.timestamp,
       temperature: obs.properties.temperature?.value ?? null,
-      Humidity: obs.properties.relativeHumidity?.value ?? null,
+      relativeHumidity: obs.properties.relativeHumidity?.value ?? null,
       windDirection: obs.properties.windDirection?.value ?? null,
       windSpeed: obs.properties.windSpeed?.value ?? null,
     }));
