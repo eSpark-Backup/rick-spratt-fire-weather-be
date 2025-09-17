@@ -34,24 +34,28 @@
  *           example: "2200-01-01T00:00:00+00:00"
  *     WeatherObservation:
  *       type: object
- *       description: All weather variables from NWS API
+ *       description: Weather observation returned after backend transformations
  *       properties:
  *         timestamp:
  *           type: string
  *           format: date-time
- *           example: "2025-08-13T13:35:25.994Z"
- *         temperature:
+ *           example: "2025-09-17T08:45:00+00:00"
+ *         temperatureF:
  *           type: number
- *           example: 27
- *         windSpeed:
+ *           example: 69.8
+ *           description: Temperature in Fahrenheit
+ *         relativeHumidity:
  *           type: number
- *           example: 9.25
+ *           example: 88.35
+ *           description: Relative humidity percentage
  *         windDirection:
+ *           type: string
+ *           example: "N"
+ *           description: Wind direction in compass notation (N, NE, E, SE, S, SW, W, NW)
+ *         windSpeedMph:
  *           type: number
- *           example: 170
- *         Humidity:
- *           type: number
- *           example: 89
+ *           example: 4.6
+ *           description: Wind speed in miles per hour
  *     ZonesResponse:
  *       type: object
  *       properties:
