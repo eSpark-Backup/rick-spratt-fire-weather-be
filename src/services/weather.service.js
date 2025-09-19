@@ -58,63 +58,6 @@ export const getAllZones = async ({
   }
 };
 
-// export const getZoneWeatherObservations = async (
-//   zoneId,
-//   { start, end, limit = 500 } = {}
-// ) => {
-//   try {
-//     if (!zoneId)
-//       throw new CustomError(
-//         "zoneId parameter is required",
-//         400,
-//         "VALIDATION_ERROR",
-//         { zoneId }
-//       );
-
-//     const { data } = await axios.get(
-//       `${WEATHER_API_BASE}/zones/forecast/${zoneId}/observations`,
-//       {
-//         params: { start, end, limit },
-//       }
-//     );
-
-//     if (!data?.features || data.features.length === 0) {
-//       throw new CustomError(
-//         `No weather observations found for zone ${zoneId}`,
-//         404,
-//         "NOT_FOUND",
-//         { zoneId }
-//       );
-//     }
-
-//     return data.features.map((obs) => ({
-//       timestamp: obs.properties.timestamp,
-//       temperature: obs.properties.temperature?.value ?? null,
-//       relativeHumidity: obs.properties.relativeHumidity?.value ?? null,
-//       windDirection: obs.properties.windDirection?.value ?? null,
-//       windSpeed: obs.properties.windSpeed?.value ?? null,
-//     }));
-//   } catch (error) {
-//     console.error("Weather Service - getZoneWeatherObservations Error:", {
-//       zoneId,
-//       start,
-//       end,
-//       limit,
-//       originalError: error.message,
-//       stack: error.stack,
-//     });
-
-//     if (error instanceof CustomError) throw error;
-
-//     throw new CustomError(
-//       `Failed to fetch weather observations for zone ${zoneId}`,
-//       502,
-//       "WEATHER_API_ERROR",
-//       { zoneId, start, end, originalError: error.message }
-//     );
-//   }
-// };
-
 export const getZoneWeatherObservations = async (
   zoneId,
   { start, end, limit = 500 } = {}
@@ -178,7 +121,6 @@ export const getZoneWeatherObservations = async (
         relativeHumidity: p.relativeHumidity?.value ?? null,
         // Compass direction instead of raw degrees
         windDirection: compass,
-        windDirectionValue: obs.properties.windDirection?.value ?? null,
         // Wind speed in mph
         windSpeedMph: windMph,
       };

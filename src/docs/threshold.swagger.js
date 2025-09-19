@@ -31,7 +31,7 @@
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Threshold'
+ *             $ref: '#/components/schemas/ThresholdRequest'
  *     responses:
  *       200:
  *         description: Threshold created/updated successfully

@@ -39,30 +39,6 @@ function checkThresholds(obs, threshold) {
     alerts.push(`Humidity below minimum ${threshold.humidity}%`);
   }
 
-  if (
-    threshold.windSpeedMin !== null &&
-    obs.windSpeed !== null &&
-    obs.windSpeed < threshold.windSpeedMin
-  ) {
-    alerts.push(`Wind speed below minimum ${threshold.windSpeedMin} mph`);
-  }
-
-  if (
-    threshold.windSpeedMax !== null &&
-    obs.windSpeed !== null &&
-    obs.windSpeed > threshold.windSpeedMax
-  ) {
-    alerts.push(`Wind speed exceeded maximum ${threshold.windSpeedMax} mph`);
-  }
-
-  if (obs.windSpeedMph !== null) {
-    if (obs.windSpeedMph < 5 || obs.windSpeedMph > 15) {
-      alerts.push(
-        `Wind speed out of safe range (5-15 mph): ${obs.windSpeedMph} mph`
-      );
-    }
-  }
-
   if (obs.windDirection !== null && obs.windSpeed !== null) {
     const degree = obs.windDirection;
     let direction;
@@ -79,55 +55,134 @@ function checkThresholds(obs, threshold) {
 
     switch (direction) {
       case "N":
-        if (threshold.northDir !== null && obs.windSpeed > threshold.northDir) {
-          alerts.push(`North wind exceeded ${threshold.northDir} mph`);
+        if (
+          threshold.northDirMin !== null &&
+          obs.windSpeed < threshold.northDirMin
+        ) {
+          alerts.push(`North wind below minimum ${threshold.northDirMin} mph`);
+        }
+        if (
+          threshold.northDirMax !== null &&
+          obs.windSpeed > threshold.northDirMax
+        ) {
+          alerts.push(
+            `North wind exceeded maximum ${threshold.northDirMax} mph`
+          );
         }
         break;
+
       case "NE":
         if (
-          threshold.northEastDir !== null &&
-          obs.windSpeed > threshold.northEastDir
+          threshold.northEastDirMin !== null &&
+          obs.windSpeed < threshold.northEastDirMin
         ) {
-          alerts.push(`NE wind exceeded ${threshold.northEastDir} mph`);
+          alerts.push(`NE wind below minimum ${threshold.northEastDirMin} mph`);
+        }
+        if (
+          threshold.northEastDirMax !== null &&
+          obs.windSpeed > threshold.northEastDirMax
+        ) {
+          alerts.push(
+            `NE wind exceeded maximum ${threshold.northEastDirMax} mph`
+          );
         }
         break;
+
       case "E":
-        if (threshold.eastDir !== null && obs.windSpeed > threshold.eastDir) {
-          alerts.push(`East wind exceeded ${threshold.eastDir} mph`);
+        if (
+          threshold.eastDirMin !== null &&
+          obs.windSpeed < threshold.eastDirMin
+        ) {
+          alerts.push(`East wind below minimum ${threshold.eastDirMin} mph`);
+        }
+        if (
+          threshold.eastDirMax !== null &&
+          obs.windSpeed > threshold.eastDirMax
+        ) {
+          alerts.push(`East wind exceeded maximum ${threshold.eastDirMax} mph`);
         }
         break;
+
       case "SE":
         if (
-          threshold.southEastDir !== null &&
-          obs.windSpeed > threshold.southEastDir
+          threshold.southEastDirMin !== null &&
+          obs.windSpeed < threshold.southEastDirMin
         ) {
-          alerts.push(`SE wind exceeded ${threshold.southEastDir} mph`);
+          alerts.push(`SE wind below minimum ${threshold.southEastDirMin} mph`);
+        }
+        if (
+          threshold.southEastDirMax !== null &&
+          obs.windSpeed > threshold.southEastDirMax
+        ) {
+          alerts.push(
+            `SE wind exceeded maximum ${threshold.southEastDirMax} mph`
+          );
         }
         break;
+
       case "S":
-        if (threshold.southDir !== null && obs.windSpeed > threshold.southDir) {
-          alerts.push(`South wind exceeded ${threshold.southDir} mph`);
+        if (
+          threshold.southDirMin !== null &&
+          obs.windSpeed < threshold.southDirMin
+        ) {
+          alerts.push(`South wind below minimum ${threshold.southDirMin} mph`);
+        }
+        if (
+          threshold.southDirMax !== null &&
+          obs.windSpeed > threshold.southDirMax
+        ) {
+          alerts.push(
+            `South wind exceeded maximum ${threshold.southDirMax} mph`
+          );
         }
         break;
+
       case "SW":
         if (
-          threshold.southWestDir !== null &&
-          obs.windSpeed > threshold.southWestDir
+          threshold.southWestDirMin !== null &&
+          obs.windSpeed < threshold.southWestDirMin
         ) {
-          alerts.push(`SW wind exceeded ${threshold.southWestDir} mph`);
+          alerts.push(`SW wind below minimum ${threshold.southWestDirMin} mph`);
+        }
+        if (
+          threshold.southWestDirMax !== null &&
+          obs.windSpeed > threshold.southWestDirMax
+        ) {
+          alerts.push(
+            `SW wind exceeded maximum ${threshold.southWestDirMax} mph`
+          );
         }
         break;
+
       case "W":
-        if (threshold.westDir !== null && obs.windSpeed > threshold.westDir) {
-          alerts.push(`West wind exceeded ${threshold.westDir} mph`);
+        if (
+          threshold.westDirMin !== null &&
+          obs.windSpeed < threshold.westDirMin
+        ) {
+          alerts.push(`West wind below minimum ${threshold.westDirMin} mph`);
+        }
+        if (
+          threshold.westDirMax !== null &&
+          obs.windSpeed > threshold.westDirMax
+        ) {
+          alerts.push(`West wind exceeded maximum ${threshold.westDirMax} mph`);
         }
         break;
+
       case "NW":
         if (
-          threshold.northWestDir !== null &&
-          obs.windSpeed > threshold.northWestDir
+          threshold.northWestDirMin !== null &&
+          obs.windSpeed < threshold.northWestDirMin
         ) {
-          alerts.push(`NW wind exceeded ${threshold.northWestDir} mph`);
+          alerts.push(`NW wind below minimum ${threshold.northWestDirMin} mph`);
+        }
+        if (
+          threshold.northWestDirMax !== null &&
+          obs.windSpeed > threshold.northWestDirMax
+        ) {
+          alerts.push(
+            `NW wind exceeded maximum ${threshold.northWestDirMax} mph`
+          );
         }
         break;
     }

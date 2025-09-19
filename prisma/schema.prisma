@@ -31,20 +31,26 @@ model Threshold {
 
   temperature Int?
   humidity    Int?
-  windSpeed   Int?
 
-  windSpeedMin Int?
-  windSpeedMax Int?
+  southDirMin Int?
+  northDirMin Int?
+  eastDirMin  Int?
+  westDirMin  Int?
 
-  southDir Int?
-  northDir Int?
-  eastDir  Int?
-  westDir  Int?
+  northEastDirMin Int?
+  northWestDirMin Int?
+  southEastDirMin Int?
+  southWestDirMin Int?
 
-  northEastDir Int?
-  northWestDir Int?
-  southEastDir Int?
-  southWestDir Int?
+  southDirMax Int?
+  northDirMax Int?
+  eastDirMax  Int?
+  westDirMax  Int?
+
+  northEastDirMax Int?
+  northWestDirMax Int?
+  southEastDirMax Int?
+  southWestDirMax Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

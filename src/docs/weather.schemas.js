@@ -52,10 +52,6 @@
  *           type: string
  *           example: "N"
  *           description: Wind direction in compass notation (N, NE, E, SE, S, SW, W, NW)
- *         windDirectionValue:
- *           type: number
- *           example: 180
- *           description: Actual numeric wind direction value from the API
  *         windSpeedMph:
  *           type: number
  *           example: 4.6

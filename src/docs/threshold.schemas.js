@@ -2,76 +2,137 @@
  * @swagger
  * components:
  *   schemas:
- *     Threshold:
+ *     # Request body schema (plain fields)
+ *     ThresholdRequest:
  *       type: object
  *       required:
  *         - temperature
  *         - humidity
- *         - windSpeed
- *         - windSpeedMin
- *         - windSpeedMax
- *         - southDir
- *         - northDir
- *         - eastDir
- *         - westDir
- *         - northEastDir
- *         - northWestDir
- *         - southEastDir
- *         - southWestDir
+ *         - northDirMin
+ *         - northDirMax
+ *         - southDirMin
+ *         - southDirMax
+ *         - eastDirMin
+ *         - eastDirMax
+ *         - westDirMin
+ *         - westDirMax
+ *         - northEastDirMin
+ *         - northEastDirMax
+ *         - northWestDirMin
+ *         - northWestDirMax
+ *         - southEastDirMin
+ *         - southEastDirMax
+ *         - southWestDirMin
+ *         - southWestDirMax
  *       properties:
  *         temperature:
  *           type: number
- *           description: Temperature threshold in °C
  *           example: 80
  *         humidity:
  *           type: number
- *           description: Relative humidity threshold in %
  *           example: 40
- *         windSpeed:
+ *         northDirMin:
  *           type: number
- *           description: Wind speed threshold in Km/h
- *           example: 15
- *         southDir:
+ *           example: 20
+ *         northDirMax:
  *           type: number
- *           description: South wind speed threshold in Km/h
- *           example: 75
- *         northDir:
+ *           example: 50
+ *         southDirMin:
  *           type: number
- *           description: North wind speed threshold in Km/h
- *           example: 75
- *         eastDir:
- *           type: number
- *           description: East wind speed threshold in Km/h
- *           example: 75
- *         westDir:
- *           type: number
- *           description: West wind speed threshold in Km/h
- *           example: 75
- *         windSpeedMin:
- *           type: number
- *           description: Minimum wind speed threshold in Km/h
- *           example: 5
- *         windSpeedMax:
- *           type: number
- *           description: Maximum wind speed threshold in Km/h
  *           example: 25
- *         northEastDir:
+ *         southDirMax:
  *           type: number
- *           description: North-East wind speed threshold in Km/h
- *           example: 75
- *         northWestDir:
+ *           example: 55
+ *         eastDirMin:
  *           type: number
- *           description: North-West wind speed threshold in Km/h
- *           example: 75
- *         southEastDir:
+ *           example: 10
+ *         eastDirMax:
  *           type: number
- *           description: South-East wind speed threshold in Km/h
- *           example: 75
- *         southWestDir:
+ *           example: 30
+ *         westDirMin:
  *           type: number
- *           description: South-West wind speed threshold in Km/h
- *           example: 75
+ *           example: 20
+ *         westDirMax:
+ *           type: number
+ *           example: 40
+ *         northEastDirMin:
+ *           type: number
+ *           example: 15
+ *         northEastDirMax:
+ *           type: number
+ *           example: 40
+ *         northWestDirMin:
+ *           type: number
+ *           example: 10
+ *         northWestDirMax:
+ *           type: number
+ *           example: 30
+ *         southEastDirMin:
+ *           type: number
+ *           example: 20
+ *         southEastDirMax:
+ *           type: number
+ *           example: 50
+ *         southWestDirMin:
+ *           type: number
+ *           example: 15
+ *         southWestDirMax:
+ *           type: number
+ *           example: 35
  *
+ *     # Response schema (nested wind_speed object)
+ *     Threshold:
+ *       type: object
+ *       properties:
+ *         temperature:
+ *           type: number
+ *           example: 80
+ *         humidity:
+ *           type: number
+ *           example: 40
+ *         wind_speed:
+ *           type: object
+ *           properties:
+ *             N:
+ *               type: object
+ *               properties:
+ *                 min: { type: number, example: 20 }
+ *                 max: { type: number, example: 50 }
+ *             NE:
+ *               type: object
+ *               properties:
+ *                 min: { type: number, example: 15 }
+ *                 max: { type: number, example: 40 }
+ *             E:
+ *               type: object
+ *               properties:
+ *                 min: { type: number, example: 10 }
+ *                 max: { type: number, example: 30 }
+ *             SE:
+ *               type: object
+ *               properties:
+ *                 min: { type: number, example: 20 }
+ *                 max: { type: number, example: 50 }
+ *             S:
+ *               type: object
+ *               properties:
+ *                 min: { type: number, example: 25 }
+ *                 max: { type: number, example: 55 }
+ *             SW:
+ *               type: object
+ *               properties:
+ *                 min: { type: number, example: 15 }
+ *                 max: { type: number, example: 35 }
+ *             W:
+ *               type: object
+ *               properties:
+ *                 min: { type: number, example: 20 }
+ *                 max: { type: number, example: 40 }
+ *             NW:
+ *               type: object
+ *               properties:
+ *                 min: { type: number, example: 10 }
+ *                 max: { type: number, example: 30 }
  *
  *     ThresholdResponse:
  *       type: object

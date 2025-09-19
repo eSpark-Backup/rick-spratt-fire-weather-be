@@ -20,21 +20,43 @@ const requireNumericFields = (body, fields) => {
   }
 };
 
+const formatThresholdResponse = (t) => ({
+  temperature: t.temperature,
+  humidity: t.humidity,
+  wind_speed: {
+    N: { min: t.northDirMin, max: t.northDirMax },
+    NE: { min: t.northEastDirMin, max: t.northEastDirMax },
+    E: { min: t.eastDirMin, max: t.eastDirMax },
+    SE: { min: t.southEastDirMin, max: t.southEastDirMax },
+    S: { min: t.southDirMin, max: t.southDirMax },
+    SW: { min: t.southWestDirMin, max: t.southWestDirMax },
+    W: { min: t.westDirMin, max: t.westDirMax },
+    NW: { min: t.northWestDirMin, max: t.northWestDirMax },
+  },
+});
+
 const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
   const {
     temperature,
     humidity,
-    windSpeed,
-    windSpeedMin,
-    windSpeedMax,
-    southDir,
-    northDir,
-    eastDir,
-    westDir,
-    northEastDir,
-    northWestDir,
-    southEastDir,
-    southWestDir,
+
+    northDirMin,
+    northDirMax,
+    southDirMin,
+    southDirMax,
+    eastDirMin,
+    eastDirMax,
+    westDirMin,
+    westDirMax,
+
+    northEastDirMin,
+    northEastDirMax,
+    northWestDirMin,
+    northWestDirMax,
+    southEastDirMin,
+    southEastDirMax,
+    southWestDirMin,
+    southWestDirMax,
   } = req.body;
 
   const userId = req.user.id;
@@ -42,36 +64,54 @@ const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
   requireNumericFields(req.body, [
     "temperature",
     "humidity",
-    "windSpeed",
-    "windSpeedMin",
-    "windSpeedMax",
-    "southDir",
-    "northDir",
-    "eastDir",
-    "westDir",
-    "northEastDir",
-    "northWestDir",
-    "southEastDir",
-    "southWestDir",
+
+    "northDirMin",
+    "northDirMax",
+    "southDirMin",
+    "southDirMax",
+    "eastDirMin",
+    "eastDirMax",
+    "westDirMin",
+    "westDirMax",
+
+    "northEastDirMin",
+    "northEastDirMax",
+    "northWestDirMin",
+    "northWestDirMax",
+    "southEastDirMin",
+    "southEastDirMax",
+    "southWestDirMin",
+    "southWestDirMax",
   ]);
 
   const threshold = await thresholdService.createOrUpdateThreshold(userId, {
     temperature,
     humidity,
-    windSpeed,
-    windSpeedMin,
-    windSpeedMax,
-    southDir,
-    northDir,
-    eastDir,
-    westDir,
-    northEastDir,
-    northWestDir,
-    southEastDir,
-    southWestDir,
+
+    northDirMin,
+    northDirMax,
+    southDirMin,
+    southDirMax,
+    eastDirMin,
+    eastDirMax,
+    westDirMin,
+    westDirMax,
+
+    northEastDirMin,
+    northEastDirMax,
+    northWestDirMin,
+    northWestDirMax,
+    southEastDirMin,
+    southEastDirMax,
+    southWestDirMin,
+    southWestDirMax,
   });
 
-  response.success(res, threshold, "Threshold created/updated successfully");
+  response.success(
+    res,
+    formatThresholdResponse(threshold),
+    "Threshold created/updated successfully"
+  );
 });
 
 const getThreshold = asyncWrapper(async (req, res) => {
@@ -81,7 +121,11 @@ const getThreshold = asyncWrapper(async (req, res) => {
   if (!threshold)
     throw new CustomError("Threshold not set for user", 404, "NOT_FOUND");
 
-  response.success(res, threshold, "Threshold fetched successfully");
+  response.success(
+    res,
+    formatThresholdResponse(threshold),
+    "Threshold fetched successfully"
+  );
 });
 
 export { createOrUpdateThreshold, getThreshold };
