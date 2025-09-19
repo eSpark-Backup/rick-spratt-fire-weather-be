@@ -35,77 +35,117 @@ const formatThresholdResponse = (t) => ({
   },
 });
 
+// const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
+//   const {
+//     temperature,
+//     humidity,
+
+//     northDirMin,
+//     northDirMax,
+//     southDirMin,
+//     southDirMax,
+//     eastDirMin,
+//     eastDirMax,
+//     westDirMin,
+//     westDirMax,
+
+//     northEastDirMin,
+//     northEastDirMax,
+//     northWestDirMin,
+//     northWestDirMax,
+//     southEastDirMin,
+//     southEastDirMax,
+//     southWestDirMin,
+//     southWestDirMax,
+//   } = req.body;
+
+//   const userId = req.user.id;
+
+//   requireNumericFields(req.body, [
+//     "temperature",
+//     "humidity",
+
+//     "northDirMin",
+//     "northDirMax",
+//     "southDirMin",
+//     "southDirMax",
+//     "eastDirMin",
+//     "eastDirMax",
+//     "westDirMin",
+//     "westDirMax",
+
+//     "northEastDirMin",
+//     "northEastDirMax",
+//     "northWestDirMin",
+//     "northWestDirMax",
+//     "southEastDirMin",
+//     "southEastDirMax",
+//     "southWestDirMin",
+//     "southWestDirMax",
+//   ]);
+
+//   const threshold = await thresholdService.createOrUpdateThreshold(userId, {
+//     temperature,
+//     humidity,
+
+//     northDirMin,
+//     northDirMax,
+//     southDirMin,
+//     southDirMax,
+//     eastDirMin,
+//     eastDirMax,
+//     westDirMin,
+//     westDirMax,
+
+//     northEastDirMin,
+//     northEastDirMax,
+//     northWestDirMin,
+//     northWestDirMax,
+//     southEastDirMin,
+//     southEastDirMax,
+//     southWestDirMin,
+//     southWestDirMax,
+//   });
+
+//   response.success(
+//     res,
+//     formatThresholdResponse(threshold),
+//     "Threshold created/updated successfully"
+//   );
+// });
+
 const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
-  const {
-    temperature,
-    humidity,
-
-    northDirMin,
-    northDirMax,
-    southDirMin,
-    southDirMax,
-    eastDirMin,
-    eastDirMax,
-    westDirMin,
-    westDirMax,
-
-    northEastDirMin,
-    northEastDirMax,
-    northWestDirMin,
-    northWestDirMax,
-    southEastDirMin,
-    southEastDirMax,
-    southWestDirMin,
-    southWestDirMax,
-  } = req.body;
-
+  const { temperature, humidity, wind_speed } = req.body;
   const userId = req.user.id;
 
-  requireNumericFields(req.body, [
-    "temperature",
-    "humidity",
+  // quick top-level validation
+  if (isNaN(temperature) || isNaN(humidity) || typeof wind_speed !== "object") {
+    throw new CustomError("Invalid payload", 400, "VALIDATION_ERROR");
+  }
 
-    "northDirMin",
-    "northDirMax",
-    "southDirMin",
-    "southDirMax",
-    "eastDirMin",
-    "eastDirMax",
-    "westDirMin",
-    "westDirMax",
+  // flatten wind_speed directions into DB fields
+  const map = {
+    N: ["northDirMin", "northDirMax"],
+    NE: ["northEastDirMin", "northEastDirMax"],
+    E: ["eastDirMin", "eastDirMax"],
+    SE: ["southEastDirMin", "southEastDirMax"],
+    S: ["southDirMin", "southDirMax"],
+    SW: ["southWestDirMin", "southWestDirMax"],
+    W: ["westDirMin", "westDirMax"],
+    NW: ["northWestDirMin", "northWestDirMax"],
+  };
 
-    "northEastDirMin",
-    "northEastDirMax",
-    "northWestDirMin",
-    "northWestDirMax",
-    "southEastDirMin",
-    "southEastDirMax",
-    "southWestDirMin",
-    "southWestDirMax",
-  ]);
+  const data = { temperature, humidity };
+  for (const d in map) {
+    const w = wind_speed[d] || {};
+    data[map[d][0]] = w.min;
+    data[map[d][1]] = w.max;
+  }
 
-  const threshold = await thresholdService.createOrUpdateThreshold(userId, {
-    temperature,
-    humidity,
-
-    northDirMin,
-    northDirMax,
-    southDirMin,
-    southDirMax,
-    eastDirMin,
-    eastDirMax,
-    westDirMin,
-    westDirMax,
-
-    northEastDirMin,
-    northEastDirMax,
-    northWestDirMin,
-    northWestDirMax,
-    southEastDirMin,
-    southEastDirMax,
-    southWestDirMin,
-    southWestDirMax,
-  });
+  const threshold = await thresholdService.createOrUpdateThreshold(
+    userId,
+    data
+  );
 
   response.success(
     res,

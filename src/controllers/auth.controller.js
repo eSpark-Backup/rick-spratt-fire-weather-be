@@ -64,7 +64,6 @@ const signUp = asyncWrapper(async (req, res) => {
     temperature: 30,
     humidity: 50,
 
-    // cardinal directions (min / max)
     northDirMin: 0,
     northDirMax: 0,
     southDirMin: 0,
@@ -74,7 +73,6 @@ const signUp = asyncWrapper(async (req, res) => {
     westDirMin: 0,
     westDirMax: 0,
 
-    // diagonal directions (min / max)
     northEastDirMin: 0,
     northEastDirMax: 0,
     northWestDirMin: 0,

@@ -87,17 +87,23 @@ export const getZoneWeatherObservations = async (
       );
     }
 
-    // ── Backend transformations for client feedback ──
+    // ── Normalize output for threshold checks ──
     return data.features.map((obs) => {
       const p = obs.properties;
 
-      // convert °C → °F (round to 1 decimal)
+      // Convert °C → °F (1 decimal)
       const tempF =
         p.temperature?.value != null
-          ? (p.temperature.value * 9) / 5 + 32
+          ? +((p.temperature.value * 9) / 5 + 32).toFixed(1)
           : null;
 
-      // compute compass direction from degrees
+      // Convert km/h → mph (1 decimal)
+      const windMph =
+        p.windSpeed?.value != null
+          ? +(p.windSpeed.value * 0.621371).toFixed(1)
+          : null;
+
+      // Compute compass direction from degrees
       const deg = p.windDirection?.value;
       const compass =
         deg == null
@@ -107,22 +113,12 @@ export const getZoneWeatherObservations = async (
               return dirs[Math.round(deg / 45) % 8];
             })();
 
-      // convert km/h → mph
-      const windMph =
-        p.windSpeed?.value != null
-          ? +(p.windSpeed.value * 0.621371).toFixed(1)
-          : null;
-
       return {
         timestamp: p.timestamp,
-        // Temperature returned in Fahrenheit
-        temperatureF: tempF,
-        // For min humidity calculation downstream; keep value as-is
+        temperature: tempF, // aligned with weather.job.js
         relativeHumidity: p.relativeHumidity?.value ?? null,
-        // Compass direction instead of raw degrees
         windDirection: compass,
-        // Wind speed in mph
-        windSpeedMph: windMph,
+        windSpeed: windMph, // aligned with weather.job.js
       };
     });
   } catch (error) {

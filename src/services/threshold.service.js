@@ -8,9 +8,6 @@ export const createOrUpdateThreshold = async (userId, data) => {
       update: {
         temperature: data.temperature,
         humidity: data.humidity,
-        windSpeed: data.windSpeed,
-        windSpeedMin: data.windSpeedMin,
-        windSpeedMax: data.windSpeedMax,
 
         northDirMin: data.northDirMin,
         northDirMax: data.northDirMax,
@@ -34,9 +31,6 @@ export const createOrUpdateThreshold = async (userId, data) => {
         userId,
         temperature: data.temperature,
         humidity: data.humidity,
-        windSpeed: data.windSpeed,
-        windSpeedMin: data.windSpeedMin,
-        windSpeedMax: data.windSpeedMax,
 
         northDirMin: data.northDirMin,
         northDirMax: data.northDirMax,
