@@ -21,17 +21,17 @@ const requireNumericFields = (body, fields) => {
 };
 
 const formatThresholdResponse = (t) => ({
-  temperature: t.temperature,
-  humidity: t.humidity,
+  temperature: t.temperature ?? null,
+  humidity: t.humidity ?? null,
   wind_speed: {
-    N: { min: t.northDirMin, max: t.northDirMax },
-    NE: { min: t.northEastDirMin, max: t.northEastDirMax },
-    E: { min: t.eastDirMin, max: t.eastDirMax },
-    SE: { min: t.southEastDirMin, max: t.southEastDirMax },
-    S: { min: t.southDirMin, max: t.southDirMax },
-    SW: { min: t.southWestDirMin, max: t.southWestDirMax },
-    W: { min: t.westDirMin, max: t.westDirMax },
-    NW: { min: t.northWestDirMin, max: t.northWestDirMax },
+    N: { min: t.northDirMin ?? null, max: t.northDirMax ?? null },
+    NE: { min: t.northEastDirMin ?? null, max: t.northEastDirMax ?? null },
+    E: { min: t.eastDirMin ?? null, max: t.eastDirMax ?? null },
+    SE: { min: t.southEastDirMin ?? null, max: t.southEastDirMax ?? null },
+    S: { min: t.southDirMin ?? null, max: t.southDirMax ?? null },
+    SW: { min: t.southWestDirMin ?? null, max: t.southWestDirMax ?? null },
+    W: { min: t.westDirMin ?? null, max: t.westDirMax ?? null },
+    NW: { min: t.northWestDirMin ?? null, max: t.northWestDirMax ?? null },
   },
 });
 
@@ -118,12 +118,7 @@ const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
   const { temperature, humidity, wind_speed } = req.body;
   const userId = req.user.id;
 
-  // quick top-level validation
-  if (isNaN(temperature) || isNaN(humidity) || typeof wind_speed !== "object") {
-    throw new CustomError("Invalid payload", 400, "VALIDATION_ERROR");
-  }
-
-  // flatten wind_speed directions into DB fields
+  // Map Joi-validated wind_speed into DB column names
   const map = {
     N: ["northDirMin", "northDirMax"],
     NE: ["northEastDirMin", "northEastDirMax"],
@@ -135,11 +130,15 @@ const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
     NW: ["northWestDirMin", "northWestDirMax"],
   };
 
-  const data = { temperature, humidity };
+  const data = {
+    temperature,
+    humidity,
+  };
+
   for (const d in map) {
-    const w = wind_speed[d] || {};
-    data[map[d][0]] = w.min;
-    data[map[d][1]] = w.max;
+    const w = wind_speed?.[d] || {};
+    data[map[d][0]] = w.min ?? null; // ensure null if missing
+    data[map[d][1]] = w.max ?? null;
   }
 
   const threshold = await thresholdService.createOrUpdateThreshold(

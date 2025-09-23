@@ -61,26 +61,26 @@ const signUp = asyncWrapper(async (req, res) => {
   const zoneName = zone?.name || null;
 
   const defaultThreshold = {
-    temperature: 30,
-    humidity: 50,
+    temperature: null,
+    humidity: null,
 
-    northDirMin: 0,
-    northDirMax: 0,
-    southDirMin: 0,
-    southDirMax: 0,
-    eastDirMin: 0,
-    eastDirMax: 0,
-    westDirMin: 0,
-    westDirMax: 0,
+    northDirMin: null,
+    northDirMax: null,
+    southDirMin: null,
+    southDirMax: null,
+    eastDirMin: null,
+    eastDirMax: null,
+    westDirMin: null,
+    westDirMax: null,
 
-    northEastDirMin: 0,
-    northEastDirMax: 0,
-    northWestDirMin: 0,
-    northWestDirMax: 0,
-    southEastDirMin: 0,
-    southEastDirMax: 0,
-    southWestDirMin: 0,
-    southWestDirMax: 0,
+    northEastDirMin: null,
+    northEastDirMax: null,
+    northWestDirMin: null,
+    northWestDirMax: null,
+    southEastDirMin: null,
+    southEastDirMax: null,
+    southWestDirMin: null,
+    southWestDirMax: null,
   };
 
   await thresholdService.createOrUpdateThreshold(user.id, defaultThreshold);
