@@ -3,6 +3,61 @@ import { CustomError } from "../utils/custom_error.js";
 
 const WEATHER_API_BASE = "https://api.weather.gov";
 
+// export const getAllZones = async ({
+//   area = "FL",
+//   type,
+//   effective,
+//   include_geometry = false,
+// } = {}) => {
+//   try {
+//     if (!area)
+//       throw new CustomError(
+//         "Area parameter is required",
+//         400,
+//         "VALIDATION_ERROR",
+//         { area }
+//       );
+
+//     const { data } = await axios.get(`${WEATHER_API_BASE}/zones`, {
+//       params: { area, type, effective, include_geometry },
+//     });
+
+//     if (!data?.features || data.features.length === 0) {
+//       throw new CustomError(
+//         `No zones found for area ${area}`,
+//         404,
+//         "NOT_FOUND",
+//         { area, type }
+//       );
+//     }
+
+//     return data.features.map((zone) => ({
+//       id: zone.properties.id,
+//       name: zone.properties.name,
+//       type: zone.properties.type,
+//       state: zone.properties.state,
+//       effectiveDate: zone.properties.effectiveDate,
+//       expirationDate: zone.properties.expirationDate,
+//     }));
+//   } catch (error) {
+//     console.error("Weather Service - getAllZones Error:", {
+//       area,
+//       type,
+//       originalError: error.message,
+//       stack: error.stack,
+//     });
+
+//     if (error instanceof CustomError) throw error;
+
+//     throw new CustomError(
+//       `Failed to fetch zones for ${area}${type ? ` (${type})` : ""}`,
+//       502,
+//       "WEATHER_API_ERROR",
+//       { area, type, originalError: error.message }
+//     );
+//   }
+// };
+
 export const getAllZones = async ({
   area = "FL",
   type,
@@ -31,7 +86,23 @@ export const getAllZones = async ({
       );
     }
 
-    return data.features.map((zone) => ({
+    // Filter zones: include only zones with at least one observation station
+    const zonesWithData = data.features.filter(
+      (zone) =>
+        Array.isArray(zone.properties.observationStations) &&
+        zone.properties.observationStations.length > 0
+    );
+
+    if (zonesWithData.length === 0) {
+      throw new CustomError(
+        `No zones with available weather data for area ${area}`,
+        404,
+        "NOT_FOUND",
+        { area, type }
+      );
+    }
+
+    return zonesWithData.map((zone) => ({
       id: zone.properties.id,
       name: zone.properties.name,
       type: zone.properties.type,
