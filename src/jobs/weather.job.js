@@ -90,11 +90,14 @@ function checkThresholds(obs, threshold) {
       const dirThreshold = windSpeedMap[direction];
       if (dirThreshold) {
         const { min, max } = dirThreshold;
-        if (min != null && obs.windSpeed < min) {
-          alerts.push(`${direction} wind below ${min} mph`);
-        }
-        if (max != null && obs.windSpeed > max) {
-          alerts.push(`${direction} wind exceeded ${max} mph`);
+        // Trigger alert only when speed is between min and max (inclusive)
+        if (
+          min != null &&
+          max != null &&
+          obs.windSpeed >= min &&
+          obs.windSpeed <= max
+        ) {
+          alerts.push(`${direction} wind is between ${min}–${max} mph`);
         }
       }
     }
