@@ -35,86 +35,8 @@ const formatThresholdResponse = (t) => ({
   },
 });
 
-// const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
-//   const {
-//     temperature,
-//     humidity,
-
-//     northDirMin,
-//     northDirMax,
-//     southDirMin,
-//     southDirMax,
-//     eastDirMin,
-//     eastDirMax,
-//     westDirMin,
-//     westDirMax,
-
-//     northEastDirMin,
-//     northEastDirMax,
-//     northWestDirMin,
-//     northWestDirMax,
-//     southEastDirMin,
-//     southEastDirMax,
-//     southWestDirMin,
-//     southWestDirMax,
-//   } = req.body;
-
-//   const userId = req.user.id;
-
-//   requireNumericFields(req.body, [
-//     "temperature",
-//     "humidity",
-
-//     "northDirMin",
-//     "northDirMax",
-//     "southDirMin",
-//     "southDirMax",
-//     "eastDirMin",
-//     "eastDirMax",
-//     "westDirMin",
-//     "westDirMax",
-
-//     "northEastDirMin",
-//     "northEastDirMax",
-//     "northWestDirMin",
-//     "northWestDirMax",
-//     "southEastDirMin",
-//     "southEastDirMax",
-//     "southWestDirMin",
-//     "southWestDirMax",
-//   ]);
-
-//   const threshold = await thresholdService.createOrUpdateThreshold(userId, {
-//     temperature,
-//     humidity,
-
-//     northDirMin,
-//     northDirMax,
-//     southDirMin,
-//     southDirMax,
-//     eastDirMin,
-//     eastDirMax,
-//     westDirMin,
-//     westDirMax,
-
-//     northEastDirMin,
-//     northEastDirMax,
-//     northWestDirMin,
-//     northWestDirMax,
-//     southEastDirMin,
-//     southEastDirMax,
-//     southWestDirMin,
-//     southWestDirMax,
-//   });
-
-//   response.success(
-//     res,
-//     formatThresholdResponse(threshold),
-//     "Threshold created/updated successfully"
-//   );
-// });
-
 const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
+  console.log("Incoming Threshold Payload:", JSON.stringify(req.body, null, 2));
   const { temperature, humidity, wind_speed } = req.body;
   const userId = req.user.id;
 

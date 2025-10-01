@@ -26,7 +26,7 @@ const dir = Joi.object({
   .default(null);
 
 export const createThresholdValidator = Joi.object({
-  temperature: Joi.number().min(-50).max(90).allow(null).default(null),
+  temperature: Joi.number().min(-58).max(194).allow(null).default(null),
   humidity: Joi.number().min(0).max(100).allow(null).default(null),
   wind_speed: Joi.object({
     N: dir,
