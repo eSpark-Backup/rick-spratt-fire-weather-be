@@ -36,7 +36,6 @@ const formatThresholdResponse = (t) => ({
 });
 
 const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
-  console.log("Incoming Threshold Payload:", JSON.stringify(req.body, null, 2));
   const { temperature, humidity, wind_speed } = req.body;
   const userId = req.user.id;
 
