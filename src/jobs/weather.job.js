@@ -58,9 +58,9 @@ function checkThresholds(obs, threshold) {
   // 3) Dispersion Index
   if (obs.dispersionIndex != null) {
     if (obs.dispersionIndex < 40) {
-      alerts.push(`Dispersion Index is too low (${obs.dispersionIndex})`);
+      alerts.push(`Dispersion Index is too low: (${obs.dispersionIndex})`);
     } else if (obs.dispersionIndex > 60) {
-      alerts.push(`Dispersion Index is too high (${obs.dispersionIndex})`);
+      alerts.push(`Dispersion Index is too high: (${obs.dispersionIndex})`);
     }
   }
 
