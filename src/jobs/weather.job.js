@@ -55,7 +55,16 @@ function checkThresholds(obs, threshold) {
     alerts.push(`Humidity below ${threshold.humidity}%`);
   }
 
-  // 3) Wind Direction / Speed (mph)
+  // 3) Dispersion Index
+  if (obs.dispersionIndex != null) {
+    if (obs.dispersionIndex < 40) {
+      alerts.push(`Dispersion Index is too low (${obs.dispersionIndex})`);
+    } else if (obs.dispersionIndex > 60) {
+      alerts.push(`Dispersion Index is too high (${obs.dispersionIndex})`);
+    }
+  }
+
+  // 4) Wind Direction / Speed (mph)
   if (obs.windDirection != null && obs.windSpeed != null) {
     let direction = null;
 
