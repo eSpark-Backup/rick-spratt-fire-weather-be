@@ -64,6 +64,9 @@ const signUp = asyncWrapper(async (req, res) => {
     temperature: null,
     humidity: null,
 
+    dispersionIndexMin: 40,
+    dispersionIndexMax: 60,
+
     northDirMin: null,
     northDirMax: null,
     southDirMin: null,

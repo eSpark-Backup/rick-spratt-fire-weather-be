@@ -23,6 +23,10 @@ const requireNumericFields = (body, fields) => {
 const formatThresholdResponse = (t) => ({
   temperature: t.temperature ?? null,
   humidity: t.humidity ?? null,
+  dispersion_index: {
+    min: t.dispersionIndexMin ?? null,
+    max: t.dispersionIndexMax ?? null,
+  },
   wind_speed: {
     N: { min: t.northDirMin ?? null, max: t.northDirMax ?? null },
     NE: { min: t.northEastDirMin ?? null, max: t.northEastDirMax ?? null },
@@ -36,7 +40,7 @@ const formatThresholdResponse = (t) => ({
 });
 
 const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
-  const { temperature, humidity, wind_speed } = req.body;
+  const { temperature, humidity, dispersion_index, wind_speed } = req.body;
   const userId = req.user.id;
 
   // Map Joi-validated wind_speed into DB column names
@@ -54,6 +58,8 @@ const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
   const data = {
     temperature,
     humidity,
+    dispersionIndexMin: dispersion_index?.min ?? null,
+    dispersionIndexMax: dispersion_index?.max ?? null,
   };
 
   for (const d in map) {

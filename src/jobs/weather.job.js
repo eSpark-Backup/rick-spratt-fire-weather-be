@@ -20,20 +20,6 @@ function getAlertCache(cacheKey) {
   return cacheKey;
 }
 
-/**
- * Accepts an observation object that is already normalized by the service:
- * {
- *   timestamp,
- *   temperature      -> Fahrenheit (number) or null
- *   relativeHumidity -> percent (number) or null
- *   windDirection    -> number (degrees) OR string ("N","NE",...) or null
- *   windSpeed        -> mph (number) or null
- * }
- *
- * And a threshold object from DB (user.Threshold).
- *
- * Returns an array of human-readable alert strings.
- */
 function checkThresholds(obs, threshold) {
   const alerts = [];
 
@@ -55,12 +41,20 @@ function checkThresholds(obs, threshold) {
     alerts.push(`Humidity below ${threshold.humidity}%`);
   }
 
-  // 3) Dispersion Index
-  if (obs.dispersionIndex != null) {
-    if (obs.dispersionIndex < 40) {
-      alerts.push(`Dispersion Index is too low: (${obs.dispersionIndex})`);
-    } else if (obs.dispersionIndex > 60) {
-      alerts.push(`Dispersion Index is too high: (${obs.dispersionIndex})`);
+  // 3) Dispersion Index (use user-defined thresholds)
+  if (
+    obs.dispersionIndex != null &&
+    threshold.dispersionIndexMin != null &&
+    threshold.dispersionIndexMax != null
+  ) {
+    if (obs.dispersionIndex < threshold.dispersionIndexMin) {
+      alerts.push(
+        `Dispersion Index (${obs.dispersionIndex}) is below minimum threshold (${threshold.dispersionIndexMin})`
+      );
+    } else if (obs.dispersionIndex > threshold.dispersionIndexMax) {
+      alerts.push(
+        `Dispersion Index (${obs.dispersionIndex}) exceeds maximum threshold (${threshold.dispersionIndexMax})`
+      );
     }
   }
 

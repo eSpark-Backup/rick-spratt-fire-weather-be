@@ -7,6 +7,7 @@
  *       required:
  *         - temperature
  *         - humidity
+ *         - dispersion_index
  *         - wind_speed
  *       properties:
  *         temperature:
@@ -15,6 +16,16 @@
  *         humidity:
  *           type: number
  *           example: 40
+ *         dispersion_index:
+ *           type: object
+ *           required: [min, max]
+ *           properties:          # <-- this line was misplaced
+ *             min:
+ *               type: number
+ *               example: 40
+ *             max:
+ *               type: number
+ *               example: 60
  *         wind_speed:
  *           type: object
  *           required: [N, NE, E, SE, S, SW, W, NW]

@@ -56,6 +56,10 @@
  *           type: number
  *           example: 4.6
  *           description: Wind speed in miles per hour
+ *         dispersionIndex:
+ *           type: number
+ *           example: 50
+ *           description: Dispersion Index value
  *     ZonesResponse:
  *       type: object
  *       properties:

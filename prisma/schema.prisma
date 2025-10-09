@@ -32,6 +32,9 @@ model Threshold {
   temperature Int?
   humidity    Int?
 
+  dispersionIndexMin Int?
+  dispersionIndexMax Int?
+
   southDirMin Int?
   northDirMin Int?
   eastDirMin  Int?
