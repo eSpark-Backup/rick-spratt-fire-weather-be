@@ -29,7 +29,9 @@ function checkThresholds(obs, threshold) {
     obs.temperature != null &&
     obs.temperature > threshold.temperature
   ) {
-    alerts.push(`Temperature exceeded ${threshold.temperature}°F`);
+    alerts.push(
+      `Temperature exceeded: threshold = ${threshold.temperature}°F, observed = ${obs.temperature}°F`
+    );
   }
 
   // 2) Humidity (%)
