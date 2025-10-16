@@ -40,7 +40,9 @@ function checkThresholds(obs, threshold) {
     obs.relativeHumidity != null &&
     obs.relativeHumidity < threshold.humidity
   ) {
-    alerts.push(`Humidity below ${threshold.humidity}%`);
+    alerts.push(
+      `Humidity below threshold: threshold = ${threshold.humidity}%, observed = ${obs.relativeHumidity}%`
+    );
   }
 
   // 3) Dispersion Index (use user-defined thresholds)
@@ -51,11 +53,11 @@ function checkThresholds(obs, threshold) {
   ) {
     if (obs.dispersionIndex < threshold.dispersionIndexMin) {
       alerts.push(
-        `Dispersion Index (${obs.dispersionIndex}) is below minimum threshold (${threshold.dispersionIndexMin})`
+        `Observed Dispersion Index (${obs.dispersionIndex}) is below minimum threshold (${threshold.dispersionIndexMin})`
       );
     } else if (obs.dispersionIndex > threshold.dispersionIndexMax) {
       alerts.push(
-        `Dispersion Index (${obs.dispersionIndex}) exceeds maximum threshold (${threshold.dispersionIndexMax})`
+        `Observed Dispersion Index (${obs.dispersionIndex}) exceeds maximum threshold (${threshold.dispersionIndexMax})`
       );
     }
   }
