@@ -113,7 +113,7 @@ function checkThresholds(obs, threshold) {
   return alerts;
 }
 
-cron.schedule("*/5 * * * *", async () => {
+cron.schedule("*/5 * * * * *", async () => {
   console.log("[CRON] Running weather threshold check...");
 
   try {
@@ -154,8 +154,25 @@ cron.schedule("*/5 * * * *", async () => {
               const lastAlert = getAlertCache(cacheKey);
 
               if (lastAlert !== cacheKey) {
-                triggeredAlerts.push(alerts.join("; "));
+                const alertMessage = alerts.join("; ");
+                const { password, Threshold, ...safeUser } = user;
+                triggeredAlerts.push({
+                  user: safeUser,
+                  alertMessage,
+                });
                 setAlertCache(cacheKey);
+
+                console.log(
+                  `\n📢 ALERT TRIGGERED
+  ├─ User Details:
+  ${JSON.stringify(safeUser, null, 2)
+    .split("\n")
+    .map((line) => "  │  " + line)
+    .join("\n")}
+  ├─ Alerts:
+  │  ${alertMessage.split("; ").join("\n  │  ")}
+  └─ Time: ${new Date().toISOString()}\n`
+                );
               }
             }
           } catch (err) {
@@ -171,9 +188,30 @@ cron.schedule("*/5 * * * *", async () => {
     }
 
     if (triggeredAlerts.length > 0) {
-      const uniqueMessage = [...new Set(triggeredAlerts)].join(" | ");
-      await sendNotificationToAllLoggedInUsers(uniqueMessage);
-      console.log(`[ALERT] Broadcasted: ${uniqueMessage}`);
+      for (const {} of triggeredAlerts) {
+    //     console.log(
+    //       `\n📨 NOTIFICATION DISPATCH
+    // ├─ Recipient Details:
+    // ${JSON.stringify(alert.user, null, 2)
+    //   .split("\n")
+    //   .map((line) => "    │  " + line)
+    //   .join("\n")}
+    // ├─ Message:
+    // │  ${alert.alertMessage.split("; ").join("\n    │  ")}
+    // └─ Sent At: ${new Date().toISOString()}\n`
+    //     );
+      }
+
+      const uniqueMessages = [
+        ...new Set(triggeredAlerts.map((a) => a.alertMessage)),
+      ].join(" | ");
+      await sendNotificationToAllLoggedInUsers(uniqueMessages);
+
+      console.log(
+        `[BROADCAST COMPLETE] Total: ${
+          triggeredAlerts.length
+        } alerts sent at ${new Date().toISOString()}`
+      );
     }
   } catch (err) {
     console.error("[CRON] Job failed:", err?.message ?? err);
