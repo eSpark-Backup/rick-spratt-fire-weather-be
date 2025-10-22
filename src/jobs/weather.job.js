@@ -113,8 +113,8 @@ function checkThresholds(obs, threshold) {
   return alerts;
 }
 
-cron.schedule("*/5 * * * * *", async () => {
-  console.log("[CRON] Running weather threshold check...");
+cron.schedule("*/30 * * * * *", async () => {
+  // console.log("[CRON] Running weather threshold check...");
 
   try {
     const batchSize = 20;
@@ -189,17 +189,17 @@ cron.schedule("*/5 * * * * *", async () => {
 
     if (triggeredAlerts.length > 0) {
       for (const {} of triggeredAlerts) {
-    //     console.log(
-    //       `\n📨 NOTIFICATION DISPATCH
-    // ├─ Recipient Details:
-    // ${JSON.stringify(alert.user, null, 2)
-    //   .split("\n")
-    //   .map((line) => "    │  " + line)
-    //   .join("\n")}
-    // ├─ Message:
-    // │  ${alert.alertMessage.split("; ").join("\n    │  ")}
-    // └─ Sent At: ${new Date().toISOString()}\n`
-    //     );
+        //     console.log(
+        //       `\n📨 NOTIFICATION DISPATCH
+        // ├─ Recipient Details:
+        // ${JSON.stringify(alert.user, null, 2)
+        //   .split("\n")
+        //   .map((line) => "    │  " + line)
+        //   .join("\n")}
+        // ├─ Message:
+        // │  ${alert.alertMessage.split("; ").join("\n    │  ")}
+        // └─ Sent At: ${new Date().toISOString()}\n`
+        //     );
       }
 
       const uniqueMessages = [

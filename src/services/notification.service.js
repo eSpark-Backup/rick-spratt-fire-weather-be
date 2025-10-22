@@ -49,7 +49,8 @@ function initFirebaseIfNeeded() {
   try {
     if (!admin.apps.length) {
       admin.initializeApp({
-        credential: admin.credential.cert(sa),
+        
+        edential: admin.credential.cert(sa),
       });
       console.log("[FCM] Firebase Admin initialized");
     }
@@ -119,7 +120,7 @@ export async function sendNotification(user, message) {
 
     return { success: true, userId: user.id, notificationId: notification.id };
   } catch (err) {
-    console.error(`[FCM] Failed for user ${user.id}:`, err.message);
+    console.error(`[FCM] Failed for user`, err?.message ?? err);
     return { success: false, userId: user.id, error: err.message };
   }
 }
@@ -138,14 +139,14 @@ export async function sendNotificationToAllLoggedInUsers(message) {
     select: { id: true, email: true, deviceToken: true },
   });
 
-  console.log("[FCM] Target users:", users);
+  // console.log("[FCM] Target users:", users);
 
   if (!users.length) {
     console.log("[FCM] No logged-in users with device tokens");
     return [];
   }
 
-  console.log(`[FCM] Sending notifications to ${users.length} users...`);
+  // console.log(`[FCM] Sending notifications to ${users.length} users...`);
 
   const results = await Promise.allSettled(
     users.map((user) => sendNotification(user, message))
