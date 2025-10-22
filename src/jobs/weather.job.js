@@ -113,8 +113,8 @@ function checkThresholds(obs, threshold) {
   return alerts;
 }
 
-cron.schedule("*/30 * * * * *", async () => {
-  // console.log("[CRON] Running weather threshold check...");
+cron.schedule("*/10 * * * *", async () => {
+  console.log("[CRON] Running weather threshold check...");
 
   try {
     const batchSize = 20;
@@ -162,17 +162,17 @@ cron.schedule("*/30 * * * * *", async () => {
                 });
                 setAlertCache(cacheKey);
 
-  //               console.log(
-  //                 `\n📢 ALERT TRIGGERED
-  // ├─ User Details:
-  // ${JSON.stringify(safeUser, null, 2)
-  //   .split("\n")
-  //   .map((line) => "  │  " + line)
-  //   .join("\n")}
-  // ├─ Alerts:
-  // │  ${alertMessage.split("; ").join("\n  │  ")}
-  // └─ Time: ${new Date().toISOString()}\n`
-  //               );
+                //               console.log(
+                //                 `\n📢 ALERT TRIGGERED
+                // ├─ User Details:
+                // ${JSON.stringify(safeUser, null, 2)
+                //   .split("\n")
+                //   .map((line) => "  │  " + line)
+                //   .join("\n")}
+                // ├─ Alerts:
+                // │  ${alertMessage.split("; ").join("\n  │  ")}
+                // └─ Time: ${new Date().toISOString()}\n`
+                //               );
               }
             }
           } catch (err) {
@@ -188,7 +188,7 @@ cron.schedule("*/30 * * * * *", async () => {
     }
 
     if (triggeredAlerts.length > 0) {
-      for (const {} of triggeredAlerts) {
+      for (const { } of triggeredAlerts) {
         //     console.log(
         //       `\n📨 NOTIFICATION DISPATCH
         // ├─ Recipient Details:
@@ -208,8 +208,7 @@ cron.schedule("*/30 * * * * *", async () => {
       await sendNotificationToAllLoggedInUsers(uniqueMessages);
 
       console.log(
-        `[BROADCAST COMPLETE] Total: ${
-          triggeredAlerts.length
+        `[BROADCAST COMPLETE] Total: ${triggeredAlerts.length
         } alerts sent at ${new Date().toISOString()}`
       );
     }
