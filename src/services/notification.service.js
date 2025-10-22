@@ -1,5 +1,6 @@
 import { prisma } from "../prisma.js";
 import { CustomError } from "../utils/custom_error.js";
+import admin from "firebase-admin";
 
 // let firebaseInitialized = false;
 // let parsedServiceAccount = null;
@@ -40,8 +41,6 @@ import { CustomError } from "../utils/custom_error.js";
 //   return parsedServiceAccount;
 // }
 
-
-
 /**
  * Send push notification to a single user
  */
@@ -77,7 +76,7 @@ export async function sendNotification(user, message) {
     apns: { headers: { "apns-priority": "10" } },
   };
 
-  console.log("[FCM] Sending payload:", JSON.stringify(payload, null, 2));
+  // console.log("[FCM] Sending payload:", JSON.stringify(payload, null, 2));
 
   try {
     const fcmResponse = await admin.messaging().send(payload);
