@@ -90,7 +90,7 @@ export async function sendNotification(user, message) {
     token: user.deviceToken,
     notification: {
       title: "Weather Alert",
-      body: message,
+      body: "Alert",
     },
     data: {
       type: "weather_alert",
@@ -100,8 +100,11 @@ export async function sendNotification(user, message) {
     apns: { headers: { "apns-priority": "10" } },
   };
 
+  console.log("[FCM] Sending payload:", JSON.stringify(payload, null, 2));
+
   try {
     const fcmResponse = await admin.messaging().send(payload);
+    console.log("[FCM] Response:", fcmResponse);
     console.log(`[FCM] Sent to ${user.email || user.id}:`, fcmResponse);
 
     const notification = await prisma.notification.create({
@@ -134,6 +137,8 @@ export async function sendNotificationToAllLoggedInUsers(message) {
     where: { deviceToken: { not: null } }, // assuming this means logged in
     select: { id: true, email: true, deviceToken: true },
   });
+
+  console.log("[FCM] Target users:", users);
 
   if (!users.length) {
     console.log("[FCM] No logged-in users with device tokens");
