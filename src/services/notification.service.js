@@ -1,70 +1,46 @@
-import admin from "firebase-admin";
 import { prisma } from "../prisma.js";
 import { CustomError } from "../utils/custom_error.js";
 
-let firebaseInitialized = false;
-let parsedServiceAccount = null;
+// let firebaseInitialized = false;
+// let parsedServiceAccount = null;
 
-function safeParseFirebaseConfig() {
-  if (parsedServiceAccount) return parsedServiceAccount;
+// function safeParseFirebaseConfig() {
+//   if (parsedServiceAccount) return parsedServiceAccount;
 
-  const raw = process.env.FIREBASE_CONFIG;
-  if (!raw) {
-    throw new CustomError(
-      "Missing FIREBASE_CONFIG environment variable",
-      500,
-      "FCM_CONFIG_MISSING"
-    );
-  }
+//   const raw = process.env.FIREBASE_CONFIG;
+//   if (!raw) {
+//     throw new CustomError(
+//       "Missing FIREBASE_CONFIG environment variable",
+//       500,
+//       "FCM_CONFIG_MISSING"
+//     );
+//   }
 
-  let obj;
-  try {
-    obj = JSON.parse(raw);
-  } catch (err) {
-    throw new CustomError(
-      "Failed to parse FIREBASE_CONFIG JSON",
-      500,
-      "FCM_CONFIG_PARSE_ERROR",
-      { originalError: String(err) }
-    );
-  }
+//   let obj;
+//   try {
+//     obj = JSON.parse(raw);
+//   } catch (err) {
+//     throw new CustomError(
+//       "Failed to parse FIREBASE_CONFIG JSON",
+//       500,
+//       "FCM_CONFIG_PARSE_ERROR",
+//       { originalError: String(err) }
+//     );
+//   }
 
-  if (obj.private_key && typeof obj.private_key === "string") {
-    obj.private_key = obj.private_key.replace(/\\n/g, "\n");
-  } else if (obj.privateKey && typeof obj.privateKey === "string") {
-    obj.privateKey = obj.privateKey.replace(/\\n/g, "\n");
-  } else {
-    console.warn("[FCM] FIREBASE_CONFIG missing private_key field.");
-  }
+//   if (obj.private_key && typeof obj.private_key === "string") {
+//     obj.private_key = obj.private_key.replace(/\\n/g, "\n");
+//   } else if (obj.privateKey && typeof obj.privateKey === "string") {
+//     obj.privateKey = obj.privateKey.replace(/\\n/g, "\n");
+//   } else {
+//     console.warn("[FCM] FIREBASE_CONFIG missing private_key field.");
+//   }
 
-  parsedServiceAccount = obj;
-  return parsedServiceAccount;
-}
+//   parsedServiceAccount = obj;
+//   return parsedServiceAccount;
+// }
 
-function initFirebaseIfNeeded() {
-  if (firebaseInitialized) return;
 
-  const sa = safeParseFirebaseConfig();
-
-  try {
-    if (!admin.apps.length) {
-      admin.initializeApp({
-        
-        edential: admin.credential.cert(sa),
-      });
-      console.log("[FCM] Firebase Admin initialized");
-    }
-    firebaseInitialized = true;
-  } catch (err) {
-    console.error("[FCM] Firebase initialization failed:", String(err));
-    throw new CustomError(
-      "Failed to initialize Firebase Admin",
-      500,
-      "FCM_INIT_ERROR",
-      { originalError: String(err) }
-    );
-  }
-}
 
 /**
  * Send push notification to a single user
@@ -85,7 +61,7 @@ export async function sendNotification(user, message) {
     throw new CustomError("Invalid message", 400, "FCM_INVALID_MESSAGE");
   }
 
-  initFirebaseIfNeeded();
+  // initFirebaseIfNeeded();
 
   const payload = {
     token: user.deviceToken,

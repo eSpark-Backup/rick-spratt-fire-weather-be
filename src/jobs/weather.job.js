@@ -162,17 +162,17 @@ cron.schedule("*/30 * * * * *", async () => {
                 });
                 setAlertCache(cacheKey);
 
-                console.log(
-                  `\n📢 ALERT TRIGGERED
-  ├─ User Details:
-  ${JSON.stringify(safeUser, null, 2)
-    .split("\n")
-    .map((line) => "  │  " + line)
-    .join("\n")}
-  ├─ Alerts:
-  │  ${alertMessage.split("; ").join("\n  │  ")}
-  └─ Time: ${new Date().toISOString()}\n`
-                );
+  //               console.log(
+  //                 `\n📢 ALERT TRIGGERED
+  // ├─ User Details:
+  // ${JSON.stringify(safeUser, null, 2)
+  //   .split("\n")
+  //   .map((line) => "  │  " + line)
+  //   .join("\n")}
+  // ├─ Alerts:
+  // │  ${alertMessage.split("; ").join("\n  │  ")}
+  // └─ Time: ${new Date().toISOString()}\n`
+  //               );
               }
             }
           } catch (err) {

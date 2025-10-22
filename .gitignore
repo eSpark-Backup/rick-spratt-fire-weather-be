@@ -3,5 +3,4 @@ node_modules
 .env
 
 /generated/prisma
-fire-weather-alert-1209e2bf18b0.json
 src/tests
