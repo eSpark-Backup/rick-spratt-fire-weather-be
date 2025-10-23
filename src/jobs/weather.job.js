@@ -1,10 +1,10 @@
 import cron from "node-cron";
 import { prisma } from "../prisma.js";
 import { getZoneWeatherObservations } from "../services/weather.service.js";
-import { sendNotificationToAllLoggedInUsers } from "../services/notification.service.js";
+import { sendNotification } from "../services/notification.service.js";
 
 const lastAlertsCache = new Map();
-const ALERT_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+const ALERT_CACHE_TTL = 60 * 60 * 1000;
 
 function setAlertCache(cacheKey) {
   lastAlertsCache.set(cacheKey, Date.now());
@@ -23,7 +23,6 @@ function getAlertCache(cacheKey) {
 function checkThresholds(obs, threshold) {
   const alerts = [];
 
-  // 1) Temperature (°F)
   if (
     threshold.temperature != null &&
     obs.temperature != null &&
@@ -34,7 +33,6 @@ function checkThresholds(obs, threshold) {
     );
   }
 
-  // 2) Humidity (%)
   if (
     threshold.humidity != null &&
     obs.relativeHumidity != null &&
@@ -45,7 +43,6 @@ function checkThresholds(obs, threshold) {
     );
   }
 
-  // 3) Dispersion Index (use user-defined thresholds)
   if (
     obs.dispersionIndex != null &&
     threshold.dispersionIndexMin != null &&
@@ -62,15 +59,12 @@ function checkThresholds(obs, threshold) {
     }
   }
 
-  // 4) Wind Direction / Speed (mph)
   if (obs.windDirection != null && obs.windSpeed != null) {
     let direction = null;
 
-    // If the service provided a compass string already, use it
     if (typeof obs.windDirection === "string") {
       direction = obs.windDirection;
     } else if (typeof obs.windDirection === "number") {
-      // convert degrees to 8-point compass
       const degree = obs.windDirection;
       if (degree >= 337.5 || degree < 22.5) direction = "N";
       else if (degree < 67.5) direction = "NE";
@@ -97,7 +91,7 @@ function checkThresholds(obs, threshold) {
       const dirThreshold = windSpeedMap[direction];
       if (dirThreshold) {
         const { min, max } = dirThreshold;
-        // Trigger alert only when speed is between min and max (inclusive)
+
         if (
           min != null &&
           max != null &&
@@ -113,8 +107,8 @@ function checkThresholds(obs, threshold) {
   return alerts;
 }
 
-cron.schedule("*/30 * * * * *", async () => {
-  // console.log("[CRON] Running weather threshold check...");
+cron.schedule("0 */3 * * *", async () => {
+  console.log("[CRON] Running weather threshold check...");
 
   try {
     const batchSize = 20;
@@ -132,11 +126,9 @@ cron.schedule("*/30 * * * * *", async () => {
 
       await Promise.all(
         users.map(async (user) => {
-          // user.Threshold is a 1:1 relation (object) per your schema
           if (!user.Threshold || !user.zoneId) return;
 
           try {
-            // The service returns normalized observations (not raw features)
             const observations = await getZoneWeatherObservations(user.zoneId);
             const latestObs =
               observations && observations.length ? observations[0] : null;
@@ -146,7 +138,6 @@ cron.schedule("*/30 * * * * *", async () => {
               return;
             }
 
-            // Directly pass normalized obs to checker
             const alerts = checkThresholds(latestObs, user.Threshold);
 
             if (alerts.length > 0) {
@@ -162,17 +153,17 @@ cron.schedule("*/30 * * * * *", async () => {
                 });
                 setAlertCache(cacheKey);
 
-  //               console.log(
-  //                 `\n📢 ALERT TRIGGERED
-  // ├─ User Details:
-  // ${JSON.stringify(safeUser, null, 2)
-  //   .split("\n")
-  //   .map((line) => "  │  " + line)
-  //   .join("\n")}
-  // ├─ Alerts:
-  // │  ${alertMessage.split("; ").join("\n  │  ")}
-  // └─ Time: ${new Date().toISOString()}\n`
-  //               );
+                console.log(
+                  `\n📢 ALERT TRIGGERED
+                ├─ User Details:
+                ${JSON.stringify(safeUser, null, 2)
+                  .split("\n")
+                  .map((line) => "  │  " + line)
+                  .join("\n")}
+                ├─ Alerts:
+                │  ${alertMessage.split("; ").join("\n  │  ")}
+                └─ Time: ${new Date().toISOString()}\n`
+                );
               }
             }
           } catch (err) {
@@ -188,30 +179,9 @@ cron.schedule("*/30 * * * * *", async () => {
     }
 
     if (triggeredAlerts.length > 0) {
-      for (const {} of triggeredAlerts) {
-        //     console.log(
-        //       `\n📨 NOTIFICATION DISPATCH
-        // ├─ Recipient Details:
-        // ${JSON.stringify(alert.user, null, 2)
-        //   .split("\n")
-        //   .map((line) => "    │  " + line)
-        //   .join("\n")}
-        // ├─ Message:
-        // │  ${alert.alertMessage.split("; ").join("\n    │  ")}
-        // └─ Sent At: ${new Date().toISOString()}\n`
-        //     );
+      for (const alert of triggeredAlerts) {
+        await sendNotification(alert.user, alert.alertMessage);
       }
-
-      const uniqueMessages = [
-        ...new Set(triggeredAlerts.map((a) => a.alertMessage)),
-      ].join(" | ");
-      await sendNotificationToAllLoggedInUsers(uniqueMessages);
-
-      console.log(
-        `[BROADCAST COMPLETE] Total: ${
-          triggeredAlerts.length
-        } alerts sent at ${new Date().toISOString()}`
-      );
     }
   } catch (err) {
     console.error("[CRON] Job failed:", err?.message ?? err);
