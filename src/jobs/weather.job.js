@@ -20,7 +20,7 @@ function getAlertCache(cacheKey) {
   return cacheKey;
 }
 
-function checkThresholds(obs, threshold) {
+export function checkThresholds(obs, threshold) {
   const alerts = [];
 
   if (
@@ -108,6 +108,7 @@ function checkThresholds(obs, threshold) {
 }
 
 cron.schedule("0 */3 * * *", async () => {
+// cron.schedule("*/30 * * * * *", async () => {
   console.log("[CRON] Running weather threshold check...");
 
   try {
@@ -180,7 +181,10 @@ cron.schedule("0 */3 * * *", async () => {
 
     if (triggeredAlerts.length > 0) {
       for (const alert of triggeredAlerts) {
-        await sendNotification(alert.user, alert.alertMessage);
+        const messages = alert.alertMessage.split("; ").filter(Boolean);
+        for (const msg of messages) {
+          await sendNotification(alert.user, msg.trim());
+        }
       }
     }
   } catch (err) {

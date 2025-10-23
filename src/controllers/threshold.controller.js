@@ -2,23 +2,10 @@ import { asyncWrapper } from "../utils/async_wrapper.js";
 import * as response from "../utils/response.js";
 import * as thresholdService from "../services/threshold.service.js";
 import { CustomError } from "../utils/custom_error.js";
-
-const requireNumericFields = (body, fields) => {
-  for (const field of fields) {
-    if (
-      body[field] === undefined ||
-      body[field] === null ||
-      isNaN(body[field])
-    ) {
-      throw new CustomError(
-        `${field} is required and must be a number`,
-        400,
-        "VALIDATION_ERROR",
-        { field }
-      );
-    }
-  }
-};
+import { getZoneWeatherObservations } from "../services/weather.service.js";
+import { sendNotification } from "../services/notification.service.js";
+import { checkThresholds } from "../jobs/weather.job.js";
+import { prisma } from "../prisma.js";
 
 const formatThresholdResponse = (t) => ({
   temperature: t.temperature ?? null,
@@ -78,6 +65,32 @@ const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
     formatThresholdResponse(threshold),
     "Threshold created/updated successfully"
   );
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+    select: {
+      id: true,
+      zoneId: true,
+      email: true,
+      deviceToken: true,
+    },
+  });
+
+  if (!user?.zoneId) {
+    throw new CustomError("User zoneId is missing", 400, "ZONE_ID_REQUIRED");
+  }
+  if (!user.zoneId) {
+    throw new CustomError("User zoneId is missing", 400, "ZONE_ID_REQUIRED");
+  }
+  const observations = await getZoneWeatherObservations(user.zoneId);
+  const latestObs = observations?.[0];
+  if (latestObs) {
+    const alerts = checkThresholds(latestObs, threshold);
+    if (alerts.length > 0) {
+      for (const msg of alerts) {
+        await sendNotification(user, msg.trim());
+      }
+    }
+  }
 });
 
 const getThreshold = asyncWrapper(async (req, res) => {
