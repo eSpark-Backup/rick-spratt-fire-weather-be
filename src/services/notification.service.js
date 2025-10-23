@@ -32,7 +32,7 @@ export async function sendNotification(user, message) {
     apns: { headers: { "apns-priority": "10" } },
   };
 
-  console.log("[FCM] Sending payload:", JSON.stringify(payload, null, 2));
+  // console.log("[FCM] Sending payload:", JSON.stringify(payload, null, 2));
 
   try {
     const fcmResponse = await admin.messaging().send(payload);

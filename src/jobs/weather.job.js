@@ -107,7 +107,7 @@ export function checkThresholds(obs, threshold) {
   return alerts;
 }
 
-cron.schedule("0 */3 * * *", async () => {
+cron.schedule("*/1 * * * *", async () => {
 // cron.schedule("*/59 * * * * *", async () => {
   console.log("[CRON] Running weather threshold check...");
 
@@ -154,17 +154,17 @@ cron.schedule("0 */3 * * *", async () => {
                 });
                 setAlertCache(cacheKey);
 
-                console.log(
-                  `\n📢 ALERT TRIGGERED
-                ├─ User Details:
-                ${JSON.stringify(safeUser, null, 2)
-                  .split("\n")
-                  .map((line) => "  │  " + line)
-                  .join("\n")}
-                ├─ Alerts:
-                │  ${alertMessage.split("; ").join("\n  │  ")}
-                └─ Time: ${new Date().toISOString()}\n`
-                );
+                // console.log(
+                //   `\n📢 ALERT TRIGGERED
+                // ├─ User Details:
+                // ${JSON.stringify(safeUser, null, 2)
+                //   .split("\n")
+                //   .map((line) => "  │  " + line)
+                //   .join("\n")}
+                // ├─ Alerts:
+                // │  ${alertMessage.split("; ").join("\n  │  ")}
+                // └─ Time: ${new Date().toISOString()}\n`
+                // );
               }
             }
           } catch (err) {
