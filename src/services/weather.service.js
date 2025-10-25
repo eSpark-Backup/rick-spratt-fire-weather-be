@@ -74,118 +74,58 @@ export const getAllZones = async ({
   }
 };
 
-export const getZoneWeatherObservations = async (
-  zoneId,
-  { start, end, limit = 500 } = {}
-) => {
+export const getZoneWeatherObservations = async (zoneId) => {
   try {
-    if (!zoneId)
-      throw new CustomError(
-        "zoneId parameter is required",
-        400,
-        "VALIDATION_ERROR",
-        { zoneId }
-      );
-
-    const { data } = await axios.get(
-      `${WEATHER_API_BASE}/zones/forecast/${zoneId}/observations`,
-      { params: { start, end, limit } }
+    const obsResponse = await axios.get(
+      `https://api.weather.gov/zones/forecast/${zoneId}/observations`
     );
+    const obsData = obsResponse.data;
 
-    if (!data?.features?.length)
-      throw new CustomError(
-        `No weather observations found for zone ${zoneId}`,
-        404,
-        "NOT_FOUND",
-        { zoneId }
-      );
-
-    const firstObs = data.features[0];
-    let dispersionIndex = null;
-
-    try {
-      const coords = firstObs.geometry?.coordinates;
-      if (coords?.length === 2) {
-        const lon = coords[0];
-        const lat = coords[1];
-
-        const pointResp = await axios.get(
-          `${WEATHER_API_BASE}/points/${lat.toFixed(4)},${lon.toFixed(4)}`
-        );
-        const { gridId, gridX, gridY } = pointResp.data.properties;
-
-        if (gridId && gridX != null && gridY != null) {
-          const gridResp = await axios.get(
-            `${WEATHER_API_BASE}/gridpoints/${gridId}/${gridX},${gridY}`
-          );
-          const dispersionList =
-            gridResp.data.properties?.dispersionIndex?.values ?? [];
-
-          if (dispersionList.length) {
-            const now = Date.now();
-            const current = dispersionList.find((v) => {
-              const [startStr, dur] = v.validTime.split("/");
-              const start = new Date(startStr).getTime();
-              let end = start;
-              if (dur?.startsWith("PT") && dur.endsWith("H")) {
-                const hrs = parseInt(dur.replace("PT", "").replace("H", ""));
-                end += hrs * 3600000;
-              }
-              return now >= start && now < end;
-            });
-            dispersionIndex = current?.value ?? null;
-          }
-        }
-      }
-    } catch (e) {
-      console.warn(
-        `Could not fetch dispersionIndex for zone ${zoneId}:`,
-        e.message
-      );
-      dispersionIndex = null;
+    if (!obsData || !obsData.features || !obsData.features.length) {
+      return null;
     }
 
-    return data.features.map((obs) => {
-      const p = obs.properties;
-      const tempF =
-        p.temperature?.value != null
-          ? +((p.temperature.value * 9) / 5 + 32).toFixed(1)
-          : null;
-      const windMph =
-        p.windSpeed?.value != null
-          ? +(p.windSpeed.value * 0.621371).toFixed(1)
-          : null;
-      const deg = p.windDirection?.value;
-      const dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
-      const compass = deg == null ? null : dirs[Math.round(deg / 45) % 8];
+    const latestObs = obsData.features[0];
+    const coordinates = latestObs.geometry?.coordinates;
+    const relativeHumidity = latestObs.properties?.relativeHumidity?.value;
 
-      return {
-        timestamp: p.timestamp,
-        temperature: tempF,
-        relativeHumidity: p.relativeHumidity?.value ?? null,
-        windDirection: compass,
-        windSpeed: windMph,
-        dispersionIndex,
-      };
-    });
-  } catch (error) {
-    console.error("Weather Service - getZoneWeatherObservations Error:", {
-      zoneId,
-      start,
-      end,
-      limit,
-      originalError: error.message,
-      stack: error.stack,
-    });
+    if (!coordinates || coordinates.length < 2) {
+      return null;
+    }
 
-    if (error instanceof CustomError) throw error;
+    const [lon, lat] = coordinates;
 
-    throw new CustomError(
-      `Failed to fetch weather observations for zone ${zoneId}`,
-      502,
-      "WEATHER_API_ERROR",
-      { zoneId, start, end, originalError: error.message }
+    const pointRes = await axios.get(
+      `https://api.weather.gov/points/${lat},${lon}`
     );
+    const { gridId, gridX, gridY } = pointRes.data.properties;
+
+    const gridForecastRes = await axios.get(
+      `https://api.weather.gov/gridpoints/${gridId}/${gridX},${gridY}/forecast`
+    );
+    const forecastPeriod = gridForecastRes.data.properties?.periods?.[0];
+
+    const temperature = forecastPeriod?.temperature ?? null;
+    const windSpeed = forecastPeriod?.windSpeed ?? null;
+    const windDirection = forecastPeriod?.windDirection ?? null;
+
+    const gridRes = await axios.get(
+      `https://api.weather.gov/gridpoints/${gridId}/${gridX},${gridY}`
+    );
+    const dispersionIndex =
+      gridRes.data.properties?.dispersionIndex?.value ?? null;
+
+    return {
+      timestamp: new Date().toISOString(),
+      temperature,
+      relativeHumidity,
+      windDirection,
+      windSpeed,
+      dispersionIndex,
+    };
+  } catch (error) {
+    logger.error("Error fetching zone weather observations:", error.message);
+    return null;
   }
 };
 
