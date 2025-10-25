@@ -107,8 +107,8 @@ export function checkThresholds(obs, threshold) {
   return alerts;
 }
 
-cron.schedule("0 */3 * * *", async () => {
-// cron.schedule("*/59 * * * * *", async () => {
+// cron.schedule("0 */3 * * *", async () => {
+  cron.schedule("*/10 * * * * *", async () => {
   console.log("[CRON] Running weather threshold check...");
 
   try {
@@ -131,40 +131,38 @@ cron.schedule("0 */3 * * *", async () => {
 
           try {
             const observations = await getZoneWeatherObservations(user.zoneId);
-            const latestObs =
-              observations && observations.length ? observations[0] : null;
-
-            if (!latestObs) {
-              console.warn(`[CRON] No weather observation for ${user.email}`);
+            if (!observations || !observations.length) {
+              console.warn(`[CRON] No weather observations for ${user.email}`);
               return;
             }
 
-            const alerts = checkThresholds(latestObs, user.Threshold);
+            for (const obs of observations) {
+              const alerts = checkThresholds(obs, user.Threshold);
+              if (alerts.length > 0) {
+                const cacheKey = `${user.zoneId}:${alerts.join("|")}`;
+                const lastAlert = getAlertCache(cacheKey);
 
-            if (alerts.length > 0) {
-              const cacheKey = `${user.zoneId}:${alerts.join("|")}`;
-              const lastAlert = getAlertCache(cacheKey);
+                if (lastAlert !== cacheKey) {
+                  const alertMessage = alerts.join("; ");
+                  const { password, Threshold, ...safeUser } = user;
+                  triggeredAlerts.push({
+                    user: safeUser,
+                    alertMessage,
+                  });
+                  setAlertCache(cacheKey);
 
-              if (lastAlert !== cacheKey) {
-                const alertMessage = alerts.join("; ");
-                const { password, Threshold, ...safeUser } = user;
-                triggeredAlerts.push({
-                  user: safeUser,
-                  alertMessage,
-                });
-                setAlertCache(cacheKey);
-
-                console.log(
-                  `\n📢 ALERT TRIGGERED
-                ├─ User Details:
-                ${JSON.stringify(safeUser, null, 2)
-                  .split("\n")
-                  .map((line) => "  │  " + line)
-                  .join("\n")}
-                ├─ Alerts:
-                │  ${alertMessage.split("; ").join("\n  │  ")}
-                └─ Time: ${new Date().toISOString()}\n`
-                );
+                  console.log(
+                    `\n📢 ALERT TRIGGERED
+        ├─ User Details:
+        ${JSON.stringify(safeUser, null, 2)
+          .split("\n")
+          .map((line) => "  │  " + line)
+          .join("\n")}
+        ├─ Alerts:
+        │  ${alertMessage.split("; ").join("\n  │  ")}
+        └─ Time: ${new Date().toISOString()}\n`
+                  );
+                }
               }
             }
           } catch (err) {
