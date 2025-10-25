@@ -115,14 +115,16 @@ export const getZoneWeatherObservations = async (zoneId) => {
     const dispersionIndex =
       gridRes.data.properties?.dispersionIndex?.value ?? null;
 
-    return {
-      timestamp: new Date().toISOString(),
-      temperature,
-      relativeHumidity,
-      windDirection,
-      windSpeed,
-      dispersionIndex,
-    };
+    return [
+      {
+        timestamp: new Date().toISOString(),
+        temperature,
+        relativeHumidity,
+        windDirection,
+        windSpeed,
+        dispersionIndex,
+      },
+    ];
   } catch (error) {
     logger.error("Error fetching zone weather observations:", error.message);
     return null;
