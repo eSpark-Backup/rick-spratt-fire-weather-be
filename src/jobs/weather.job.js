@@ -92,13 +92,21 @@ export function checkThresholds(obs, threshold) {
       if (dirThreshold) {
         const { min, max } = dirThreshold;
 
-        if (
-          min != null &&
-          max != null &&
-          obs.windSpeed >= min &&
-          obs.windSpeed <= max
-        ) {
-          alerts.push(`${direction} wind is between ${min}–${max} mph`);
+        if (obs.windSpeed) {
+          const match = obs.windSpeed.match(/(\d+)(?:\s*to\s*(\d+))?/);
+          const windMin = match ? parseFloat(match[1]) : null;
+          const windMax = match && match[2] ? parseFloat(match[2]) : windMin;
+
+          if (
+            windMin != null &&
+            windMax != null &&
+            min != null &&
+            max != null
+          ) {
+            if (windMin >= min && windMax <= max) {
+              alerts.push(`${direction} wind is between ${min}–${max} mph`);
+            }
+          }
         }
       }
     }
@@ -108,7 +116,7 @@ export function checkThresholds(obs, threshold) {
 }
 
 // cron.schedule("0 */3 * * *", async () => {
-  cron.schedule("*/10 * * * * *", async () => {
+cron.schedule("*/10 * * * * *", async () => {
   console.log("[CRON] Running weather threshold check...");
 
   try {
