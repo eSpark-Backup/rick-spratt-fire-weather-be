@@ -29,7 +29,7 @@ export function checkThresholds(obs, threshold) {
     obs.temperature > threshold.temperature
   ) {
     alerts.push(
-      `Temperature exceeded: threshold = ${threshold.temperature}°F, observed = ${obs.temperature}°F`
+      `Day ${obs.number} (${obs.name}): Temperature exceeded: threshold = ${threshold.temperature}°F, observed = ${obs.temperature}°F`
     );
   }
 
@@ -39,7 +39,7 @@ export function checkThresholds(obs, threshold) {
     obs.relativeHumidity < threshold.humidity
   ) {
     alerts.push(
-      `Humidity below threshold: threshold = ${threshold.humidity}%, observed = ${obs.relativeHumidity}%`
+      `Day ${obs.number} (${obs.name}): Humidity below threshold: threshold = ${threshold.humidity}%, observed = ${obs.relativeHumidity}%`
     );
   }
 
@@ -50,11 +50,11 @@ export function checkThresholds(obs, threshold) {
   ) {
     if (obs.dispersionIndex < threshold.dispersionIndexMin) {
       alerts.push(
-        `Observed Dispersion Index (${obs.dispersionIndex}) is below minimum threshold (${threshold.dispersionIndexMin})`
+        `Day ${obs.number} (${obs.name}): Observed Dispersion Index (${obs.dispersionIndex}) is below minimum threshold (${threshold.dispersionIndexMin})`
       );
     } else if (obs.dispersionIndex > threshold.dispersionIndexMax) {
       alerts.push(
-        `Observed Dispersion Index (${obs.dispersionIndex}) exceeds maximum threshold (${threshold.dispersionIndexMax})`
+        `Day ${obs.number} (${obs.name}): Observed Dispersion Index (${obs.dispersionIndex}) exceeds maximum threshold (${threshold.dispersionIndexMax})`
       );
     }
   }
@@ -104,7 +104,9 @@ export function checkThresholds(obs, threshold) {
             max != null
           ) {
             if (windMin >= min && windMax <= max) {
-              alerts.push(`${direction} wind is between ${min}–${max} mph`);
+              alerts.push(
+                `Day ${obs.number} (${obs.name}): ${direction} wind is between ${min}–${max} mph`
+              );
             }
           }
         }
@@ -115,8 +117,8 @@ export function checkThresholds(obs, threshold) {
   return alerts;
 }
 
-// cron.schedule("0 */3 * * *", async () => {
-cron.schedule("*/10 * * * * *", async () => {
+cron.schedule("0 */3 * * *", async () => {
+// cron.schedule("*/30 * * * * *", async () => {
   console.log("[CRON] Running weather threshold check...");
 
   try {

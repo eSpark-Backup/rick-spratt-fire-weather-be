@@ -65,6 +65,7 @@ const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
     formatThresholdResponse(threshold),
     "Threshold created/updated successfully"
   );
+
   const user = await prisma.user.findUnique({
     where: { id: req.user.id },
     select: {

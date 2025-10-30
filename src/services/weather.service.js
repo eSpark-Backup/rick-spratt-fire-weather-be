@@ -203,6 +203,8 @@ export const getZoneWeatherObservations = async (zoneId) => {
 
       return {
         timestamp: period.startTime,
+        number: period.number,
+        name: period.name,
         temperature: period.temperature ?? null,
         relativeHumidity,
         windDirection: period.windDirection ?? null,
