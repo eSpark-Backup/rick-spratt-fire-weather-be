@@ -158,7 +158,6 @@ export const getZoneWeatherObservations = async (zoneId) => {
 
     const latestObs = obsData.features[0];
     const coordinates = latestObs.geometry?.coordinates;
-    const relativeHumidity = latestObs.properties?.relativeHumidity?.value;
 
     if (!coordinates || coordinates.length < 2) return null;
 
@@ -168,6 +167,12 @@ export const getZoneWeatherObservations = async (zoneId) => {
       `https://api.weather.gov/points/${lat},${lon}`
     );
     const { gridId, gridX, gridY } = pointRes.data.properties;
+
+    // Fetch hourly forecast
+    const hourlyRes = await axios.get(
+      `https://api.weather.gov/gridpoints/${gridId}/${gridX},${gridY}/forecast/hourly`
+    );
+    const hourlyPeriods = hourlyRes.data.properties?.periods ?? [];
 
     // Fetch 7-day forecast data
     const gridForecastRes = await axios.get(
@@ -184,7 +189,9 @@ export const getZoneWeatherObservations = async (zoneId) => {
 
     // Combine forecast with matching dispersion index
     const weatherData = forecastPeriods.map((period) => {
-      const forecastStart = new Date(period.startTime).getTime();
+      const forecastStart = new Date(period.startTime);
+      const forecastEnd = new Date(period.endTime);
+      const forecastStartMs = forecastStart.getTime();
       let matchedDispersion = null;
 
       if (dispersionList.length) {
@@ -196,10 +203,24 @@ export const getZoneWeatherObservations = async (zoneId) => {
             const hrs = parseInt(dur.replace("PT", "").replace("H", ""));
             end += hrs * 3600000;
           }
-          return forecastStart >= start && forecastStart < end;
+          return forecastStartMs >= start && forecastStartMs < end;
         });
         matchedDispersion = match?.value ?? null;
       }
+
+      const matchedHours = hourlyPeriods.filter((h) => {
+        const hTime = new Date(h.startTime);
+        return hTime >= forecastStart && hTime <= forecastEnd;
+      });
+      const relativeHumidity =
+        matchedHours.length > 0
+          ? Math.round(
+              matchedHours.reduce(
+                (sum, h) => sum + (h.relativeHumidity?.value ?? 0),
+                0
+              ) / matchedHours.length
+            )
+          : null;
 
       return {
         timestamp: period.startTime,
