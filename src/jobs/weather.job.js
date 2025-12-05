@@ -34,13 +34,18 @@ export function checkThresholds(obs, threshold) {
   }
 
   if (
-    threshold.humidity != null &&
     obs.relativeHumidity != null &&
-    obs.relativeHumidity < threshold.humidity
+    threshold.relativeHumidityMin != null &&
+    threshold.relativeHumidityMax != null
   ) {
-    alerts.push(
-      `Day ${obs.number} (${obs.name}): Humidity below threshold: threshold = ${threshold.humidity}%, observed = ${obs.relativeHumidity}%`
-    );
+    if (
+      obs.relativeHumidity >= threshold.relativeHumidityMin &&
+      obs.relativeHumidity <= threshold.relativeHumidityMax
+    ) {
+      alerts.push(
+        `Day ${obs.number} (${obs.name}): Relative humidity is between ${threshold.relativeHumidityMin}–${threshold.relativeHumidityMax}%`
+      );
+    }
   }
 
   if (

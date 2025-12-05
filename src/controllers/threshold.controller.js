@@ -9,7 +9,10 @@ import { prisma } from "../prisma.js";
 
 const formatThresholdResponse = (t) => ({
   temperature: t.temperature ?? null,
-  humidity: t.humidity ?? null,
+  humidity: {
+    min: t.relativeHumidityMin ?? null,
+    max: t.relativeHumidityMax ?? null,
+  },
   dispersion_index: {
     min: t.dispersionIndexMin ?? null,
     max: t.dispersionIndexMax ?? null,
@@ -44,7 +47,8 @@ const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
 
   const data = {
     temperature,
-    humidity,
+    relativeHumidityMin: humidity?.min ?? null,
+    relativeHumidityMax: humidity?.max ?? null,
     dispersionIndexMin: dispersion_index?.min ?? null,
     dispersionIndexMax: dispersion_index?.max ?? null,
   };
