@@ -14,8 +14,15 @@
  *           type: number
  *           example: 80
  *         humidity:
- *           type: number
- *           example: 40
+ *           type: object
+ *           required: [min, max]
+ *           properties:          # <-- this line was misplaced
+ *             min:
+ *               type: number
+ *               example: 40
+ *             max:
+ *               type: number
+ *               example: 60
  *         dispersion_index:
  *           type: object
  *           required: [min, max]
