@@ -26,10 +26,10 @@ export function checkThresholds(obs, threshold) {
   if (
     threshold.temperature != null &&
     obs.temperature != null &&
-    obs.temperature > threshold.temperature
+    obs.temperature < threshold.temperature
   ) {
     alerts.push(
-      `Day ${obs.number} (${obs.name}): Temperature exceeded: threshold = ${threshold.temperature}°F, observed = ${obs.temperature}°F`
+      `Day ${obs.number} (${obs.name}): Temperature fell below: threshold = ${threshold.temperature}°F, observed = ${obs.temperature}°F`
     );
   }
 
@@ -48,13 +48,12 @@ export function checkThresholds(obs, threshold) {
     threshold.dispersionIndexMin != null &&
     threshold.dispersionIndexMax != null
   ) {
-    if (obs.dispersionIndex < threshold.dispersionIndexMin) {
+    if (
+      obs.dispersionIndex >= threshold.dispersionIndexMin &&
+      obs.dispersionIndex <= threshold.dispersionIndexMax
+    ) {
       alerts.push(
-        `Day ${obs.number} (${obs.name}): Observed Dispersion Index (${obs.dispersionIndex}) is below minimum threshold (${threshold.dispersionIndexMin})`
-      );
-    } else if (obs.dispersionIndex > threshold.dispersionIndexMax) {
-      alerts.push(
-        `Day ${obs.number} (${obs.name}): Observed Dispersion Index (${obs.dispersionIndex}) exceeds maximum threshold (${threshold.dispersionIndexMax})`
+        `Day ${obs.number} (${obs.name}): dispersion index is between ${threshold.dispersionIndexMin}–${threshold.dispersionIndexMax}`
       );
     }
   }
@@ -118,7 +117,7 @@ export function checkThresholds(obs, threshold) {
 }
 
 cron.schedule("0 */3 * * *", async () => {
-// cron.schedule("*/30 * * * * *", async () => {
+  // cron.schedule("*/30 * * * * *", async () => {
   console.log("[CRON] Running weather threshold check...");
 
   try {
