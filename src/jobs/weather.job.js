@@ -107,7 +107,7 @@ export function checkThresholds(obs, threshold) {
             min != null &&
             max != null
           ) {
-            if (windMin >= min && windMax <= max) {
+            if (windMax >= min && windMin <= max) {
               alerts.push(
                 `Day ${obs.number} (${obs.name}): ${direction} wind is between ${min}–${max} mph`
               );
