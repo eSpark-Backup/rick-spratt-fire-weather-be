@@ -76,6 +76,7 @@ export const getAllZones = async ({
 
 export const getZoneWeatherObservations = async (zoneId) => {
   try {
+    // Step 1: Get point coordinates from zone observations
     const obsResponse = await axios.get(
       `https://api.weather.gov/zones/forecast/${zoneId}/observations`
     );
@@ -85,60 +86,121 @@ export const getZoneWeatherObservations = async (zoneId) => {
 
     const latestObs = obsData.features[0];
     const coordinates = latestObs.geometry?.coordinates;
-    const relativeHumidity = latestObs.properties?.relativeHumidity?.value;
 
     if (!coordinates || coordinates.length < 2) return null;
 
     const [lon, lat] = coordinates;
 
+    // Step 2: Convert coordinates to gridpoint
     const pointRes = await axios.get(
       `https://api.weather.gov/points/${lat},${lon}`
     );
     const { gridId, gridX, gridY } = pointRes.data.properties;
 
-    // Fetch 7-day forecast data
-    const gridForecastRes = await axios.get(
-      `https://api.weather.gov/gridpoints/${gridId}/${gridX},${gridY}/forecast`
-    );
-    const forecastPeriods = gridForecastRes.data.properties?.periods ?? [];
-
-    // Fetch dispersion index values
+    // Step 3: Fetch raw gridpoint data with all parameters
     const gridRes = await axios.get(
       `https://api.weather.gov/gridpoints/${gridId}/${gridX},${gridY}`
     );
-    const dispersionList =
-      gridRes.data.properties?.dispersionIndex?.values ?? [];
+    const props = gridRes.data.properties;
 
-    // Combine forecast with matching dispersion index
-    const weatherData = forecastPeriods.map((period) => {
-      const forecastStart = new Date(period.startTime).getTime();
-      let matchedDispersion = null;
+    // Extract time-series arrays for each parameter
+    const temperatureList = props?.temperature?.values ?? [];
+    const humidityList = props?.relativeHumidity?.values ?? [];
+    const dispersionList = props?.dispersionIndex?.values ?? [];
+    const windDirectionList = props?.windDirection?.values ?? [];
+    const windSpeedList = props?.windSpeed?.values ?? [];
 
-      if (dispersionList.length) {
-        const match = dispersionList.find((v) => {
-          const [startStr, dur] = v.validTime.split("/");
-          const start = new Date(startStr).getTime();
-          let end = start;
-          if (dur?.startsWith("PT") && dur.endsWith("H")) {
-            const hrs = parseInt(dur.replace("PT", "").replace("H", ""));
-            end += hrs * 3600000;
-          }
-          return forecastStart >= start && forecastStart < end;
-        });
-        matchedDispersion = match?.value ?? null;
+    // Helper function to parse ISO 8601 duration and get end time
+    const parseValidTime = (validTimeStr) => {
+      const [startStr, dur] = validTimeStr.split("/");
+      const start = new Date(startStr).getTime();
+      let end = start;
+
+      if (dur?.startsWith("PT") && dur.endsWith("H")) {
+        const hrs = parseInt(dur.replace("PT", "").replace("H", ""));
+        end += hrs * 3600000;
       }
 
-      return {
-        timestamp: period.startTime,
-        number: period.number,
-        name: period.name,
-        temperature: period.temperature ?? null,
-        relativeHumidity,
-        windDirection: period.windDirection ?? null,
-        windSpeed: period.windSpeed ?? null,
-        dispersionIndex: matchedDispersion,
-      };
+      return { start, end };
+    };
+
+    // Helper function to find value for a specific timestamp
+    const findValueAtTime = (timeSeriesList, targetTime) => {
+      if (!timeSeriesList?.length) return null;
+
+      const match = timeSeriesList.find((item) => {
+        const { start, end } = parseValidTime(item.validTime);
+        return targetTime >= start && targetTime < end;
+      });
+
+      return match?.value ?? null;
+    };
+
+    // Helper to convert wind direction degrees to compass
+    const degreesToCompass = (deg) => {
+      if (deg == null) return null;
+      const dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+      return dirs[Math.round(deg / 45) % 8];
+    };
+
+    // Helper to convert Celsius to Fahrenheit
+    const celsiusToFahrenheit = (c) => {
+      if (c == null) return null;
+      return +((c * 9) / 5 + 32).toFixed(1);
+    };
+
+    // Helper to convert m/s to mph
+    const kmhToMph = (kmh) => {
+      if (kmh == null) return null;
+      return +(kmh * 0.621371).toFixed(1);
+    };
+
+    // Collect all unique timestamps from all parameters
+    const allTimestamps = new Set();
+    [
+      temperatureList,
+      humidityList,
+      dispersionList,
+      windDirectionList,
+      windSpeedList,
+    ].forEach((list) => {
+      list.forEach((item) => {
+        const { start } = parseValidTime(item.validTime);
+        allTimestamps.add(start);
+      });
     });
+
+    // Convert to sorted array (earliest first)
+    const sortedTimestamps = Array.from(allTimestamps).sort((a, b) => a - b);
+
+    // Build weather data array with all parameters matched by timestamp
+    const weatherData = sortedTimestamps
+      .slice(0, 168)
+      .map((timestamp, index) => {
+        const tempC = findValueAtTime(temperatureList, timestamp);
+        const tempF = celsiusToFahrenheit(tempC);
+
+        const humidity = findValueAtTime(humidityList, timestamp);
+
+        const dispersion = findValueAtTime(dispersionList, timestamp);
+
+        const windDirDeg = findValueAtTime(windDirectionList, timestamp);
+        const windDir = degreesToCompass(windDirDeg);
+
+        const windSpeedKmh = findValueAtTime(windSpeedList, timestamp);
+        const windSpeedMph = kmhToMph(windSpeedKmh);
+
+        return {
+          timestamp: new Date(timestamp).toISOString(),
+          number: index + 1,
+          name: `Hour ${index + 1}`,
+          temperature: tempF,
+          relativeHumidity: humidity,
+          windDirection: windDir,
+          windSpeed: windSpeedMph ? `${windSpeedMph} mph` : null,
+          dispersionIndex: dispersion,
+        };
+      });
 
     return weatherData;
   } catch (error) {
