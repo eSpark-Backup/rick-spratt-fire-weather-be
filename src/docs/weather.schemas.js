@@ -40,7 +40,7 @@
  *           type: string
  *           format: date-time
  *           example: "2025-09-17T08:45:00+00:00"
- *         temperatureF:
+ *         temperature:
  *           type: number
  *           example: 69.8
  *           description: Temperature in Fahrenheit
@@ -52,7 +52,7 @@
  *           type: string
  *           example: "N"
  *           description: Wind direction in compass notation (N, NE, E, SE, S, SW, W, NW)
- *         windSpeedMph:
+ *         windSpeed:
  *           type: number
  *           example: 4.6
  *           description: Wind speed in miles per hour
