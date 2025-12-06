@@ -83,16 +83,14 @@ const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
   if (!user?.zoneId) {
     throw new CustomError("User zoneId is missing", 400, "ZONE_ID_REQUIRED");
   }
-  if (!user.zoneId) {
-    throw new CustomError("User zoneId is missing", 400, "ZONE_ID_REQUIRED");
-  }
   const observations = await getZoneWeatherObservations(user.zoneId);
-  const latestObs = observations?.[0];
-  if (latestObs) {
-    const alerts = checkThresholds(latestObs, threshold);
-    if (alerts.length > 0) {
-      for (const msg of alerts) {
-        await sendNotification(user, msg.trim());
+  if (observations?.length) {
+    for (const obs of observations) {
+      const alerts = checkThresholds(obs, threshold);
+      if (alerts.length > 0) {
+        for (const msg of alerts) {
+          await sendNotification(user, msg.trim());
+        }
       }
     }
   }
