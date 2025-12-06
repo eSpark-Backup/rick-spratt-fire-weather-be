@@ -29,7 +29,7 @@ export function checkThresholds(obs, threshold) {
     obs.temperature < threshold.temperature
   ) {
     alerts.push(
-      `Day ${obs.number} (${obs.name}): Temperature fell below: threshold = ${threshold.temperature}°F, observed = ${obs.temperature}°F`
+      `(${obs.name}): Temperature fell below: threshold = ${threshold.temperature}°F, observed = ${obs.temperature}°F`
     );
   }
 
@@ -43,7 +43,7 @@ export function checkThresholds(obs, threshold) {
       obs.relativeHumidity <= threshold.relativeHumidityMax
     ) {
       alerts.push(
-        `Day ${obs.number} (${obs.name}): Relative humidity is between ${threshold.relativeHumidityMin}–${threshold.relativeHumidityMax}%`
+        `(${obs.name}): Relative humidity is between ${threshold.relativeHumidityMin}–${threshold.relativeHumidityMax}%`
       );
     }
   }
@@ -58,7 +58,7 @@ export function checkThresholds(obs, threshold) {
       obs.dispersionIndex <= threshold.dispersionIndexMax
     ) {
       alerts.push(
-        `Day ${obs.number} (${obs.name}): dispersion index is between ${threshold.dispersionIndexMin}–${threshold.dispersionIndexMax}`
+        `(${obs.name}): dispersion index is between ${threshold.dispersionIndexMin}–${threshold.dispersionIndexMax}`
       );
     }
   }
@@ -109,7 +109,7 @@ export function checkThresholds(obs, threshold) {
           ) {
             if (windMax >= min && windMin <= max) {
               alerts.push(
-                `Day ${obs.number} (${obs.name}): ${direction} wind is between ${min}–${max} mph`
+                `(${obs.name}): ${direction} wind is between ${min}–${max} mph`
               );
             }
           }
@@ -122,7 +122,7 @@ export function checkThresholds(obs, threshold) {
 }
 
 cron.schedule("0 */3 * * *", async () => {
-  // cron.schedule("*/30 * * * * *", async () => {
+  // cron.schedule("*/59 * * * * *", async () => {
   console.log("[CRON] Running weather threshold check...");
 
   try {

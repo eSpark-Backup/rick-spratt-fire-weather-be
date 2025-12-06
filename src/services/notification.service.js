@@ -35,9 +35,9 @@ export async function sendNotification(user, message) {
   console.log("[FCM] Sending payload:", JSON.stringify(payload, null, 2));
 
   try {
-    const fcmResponse = await admin.messaging().send(payload);
-    console.log("[FCM] Response:", fcmResponse);
-    console.log(`[FCM] Sent to ${user.email || user.id}:`, fcmResponse);
+    // const fcmResponse = await admin.messaging().send(payload);
+    // console.log("[FCM] Response:", fcmResponse);
+    // console.log(`[FCM] Sent to ${user.email || user.id}:`, fcmResponse);
 
     const notification = await prisma.notification.create({
       data: {
