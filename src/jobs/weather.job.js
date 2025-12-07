@@ -29,7 +29,7 @@ export function checkThresholds(obs, threshold) {
     obs.temperature < threshold.temperature
   ) {
     alerts.push(
-      `(${obs.name}): Temperature fell below: threshold = ${threshold.temperature}°F, observed = ${obs.temperature}°F`
+      `Temperature will fall below on ${obs.date_and_time}: threshold = ${threshold.temperature}°F, observed = ${obs.temperature}°F`
     );
   }
 
@@ -43,7 +43,7 @@ export function checkThresholds(obs, threshold) {
       obs.relativeHumidity <= threshold.relativeHumidityMax
     ) {
       alerts.push(
-        `(${obs.name}): Relative humidity is between ${threshold.relativeHumidityMin}–${threshold.relativeHumidityMax}%`
+        `Relative humidity will be between ${threshold.relativeHumidityMin}–${threshold.relativeHumidityMax}% on ${obs.date_and_time}`
       );
     }
   }
@@ -58,7 +58,7 @@ export function checkThresholds(obs, threshold) {
       obs.dispersionIndex <= threshold.dispersionIndexMax
     ) {
       alerts.push(
-        `(${obs.name}): dispersion index is between ${threshold.dispersionIndexMin}–${threshold.dispersionIndexMax}`
+        `Dispersion index will be between ${threshold.dispersionIndexMin}–${threshold.dispersionIndexMax} on ${obs.date_and_time}`
       );
     }
   }
@@ -109,7 +109,7 @@ export function checkThresholds(obs, threshold) {
           ) {
             if (windMax >= min && windMin <= max) {
               alerts.push(
-                `(${obs.name}): ${direction} wind is between ${min}–${max} mph`
+                `${direction} direction wind will be between ${min}–${max} mph on ${obs.date_and_time}`
               );
             }
           }

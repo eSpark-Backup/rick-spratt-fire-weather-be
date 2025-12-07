@@ -173,6 +173,19 @@ export const getZoneWeatherObservations = async (zoneId) => {
     // Convert to sorted array (earliest first)
     const sortedTimestamps = Array.from(allTimestamps).sort((a, b) => a - b);
 
+    // Helper to format friendly date name
+    const formatFriendlyName = (timestamp) => {
+      const date = new Date(timestamp);
+      return date.toLocaleString("en-US", {
+        weekday: "short", // Thu
+        month: "short", // Dec
+        day: "numeric", // 5
+        hour: "numeric", // 11
+        minute: "2-digit", // 00
+        hour12: true, // PM
+      });
+    };
+
     // Build weather data array with all parameters matched by timestamp
     const weatherData = sortedTimestamps
       .slice(0, 168)
@@ -193,7 +206,7 @@ export const getZoneWeatherObservations = async (zoneId) => {
         return {
           timestamp: new Date(timestamp).toISOString(),
           number: index + 1,
-          name: `Hour ${index + 1}`,
+          date_and_time: formatFriendlyName(timestamp),
           temperature: tempF,
           relativeHumidity: humidity,
           windDirection: windDir,
