@@ -177,12 +177,12 @@ export const getZoneWeatherObservations = async (zoneId) => {
     const formatFriendlyName = (timestamp) => {
       const date = new Date(timestamp);
       return date.toLocaleString("en-US", {
-        weekday: "short", // Thu
-        month: "short", // Dec
-        day: "numeric", // 5
-        hour: "numeric", // 11
-        minute: "2-digit", // 00
-        hour12: true, // PM
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
       });
     };
 
