@@ -40,13 +40,21 @@
  *           type: string
  *           format: date-time
  *           example: "2025-09-17T08:45:00+00:00"
+ *         number:
+ *           type: integer
+ *           example: 1
+ *           description: Sequential number of the observation in the returned list
+ *         date:
+ *           type: string
+ *           example: "Sep 17, 2025, 08:00 AM"
+ *           description: Formatted date and time of the observation
  *         temperature:
  *           type: number
- *           example: 69.8
+ *           example: 65
  *           description: Temperature in Fahrenheit
  *         relativeHumidity:
  *           type: number
- *           example: 88.35
+ *           example: 84
  *           description: Relative humidity percentage
  *         windDirection:
  *           type: string

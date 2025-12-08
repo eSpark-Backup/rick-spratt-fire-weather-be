@@ -210,7 +210,7 @@ export const getZoneWeatherObservations = async (zoneId) => {
           temperature: tempF,
           relativeHumidity: humidity,
           windDirection: windDir,
-          windSpeed: windSpeedMph ? `${windSpeedMph}` : null,
+          windSpeed: windSpeedMph ?? null,
           dispersionIndex: dispersion,
         };
       });
