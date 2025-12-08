@@ -233,7 +233,7 @@ export function checkThresholds(observations, threshold) {
   observations.forEach((obs) => {
     // const date = obs.date; // e.g., "Dec 9, 2025"
 
-    const raw = obs.date_and_time || obs.timestamp;
+    const raw = obs.date || obs.timestamp;
     const dateObj = raw ? new Date(raw) : null;
 
     const date = dateObj
