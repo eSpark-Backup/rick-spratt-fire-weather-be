@@ -64,12 +64,6 @@ const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
     data
   );
 
-  response.success(
-    res,
-    formatThresholdResponse(threshold),
-    "Threshold created/updated successfully"
-  );
-
   const user = await prisma.user.findUnique({
     where: { id: req.user.id },
     select: {
@@ -83,17 +77,25 @@ const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
   if (!user?.zoneId) {
     throw new CustomError("User zoneId is missing", 400, "ZONE_ID_REQUIRED");
   }
+
   const observations = await getZoneWeatherObservations(user.zoneId);
   if (observations?.length) {
-    for (const obs of observations) {
-      const alerts = checkThresholds(obs, threshold);
-      if (alerts.length > 0) {
-        for (const msg of alerts) {
-          await sendNotification(user, msg.trim());
-        }
+    // Call the NEW groupAndCheckThresholds function that expects an array
+    const alerts = checkThresholds(observations, threshold);
+
+    if (alerts.length > 0) {
+      for (const alert of alerts) {
+        await sendNotification(user, alert.message);
       }
     }
   }
+
+  // Send response AFTER all async operations complete
+  response.success(
+    res,
+    formatThresholdResponse(threshold),
+    "Threshold created/updated successfully"
+  );
 });
 
 const getThreshold = asyncWrapper(async (req, res) => {

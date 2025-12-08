@@ -206,7 +206,7 @@ export const getZoneWeatherObservations = async (zoneId) => {
         return {
           timestamp: new Date(timestamp).toISOString(),
           number: index + 1,
-          date_and_time: formatFriendlyName(timestamp),
+          date: formatFriendlyName(timestamp),
           temperature: tempF,
           relativeHumidity: humidity,
           windDirection: windDir,
