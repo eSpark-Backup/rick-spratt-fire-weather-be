@@ -9,7 +9,10 @@ import { prisma } from "../prisma.js";
 
 const formatThresholdResponse = (t) => ({
   temperature: t.temperature ?? null,
-  humidity: t.humidity ?? null,
+  humidity: {
+    min: t.relativeHumidityMin ?? null,
+    max: t.relativeHumidityMax ?? null,
+  },
   dispersion_index: {
     min: t.dispersionIndexMin ?? null,
     max: t.dispersionIndexMax ?? null,
@@ -44,7 +47,8 @@ const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
 
   const data = {
     temperature,
-    humidity,
+    relativeHumidityMin: humidity?.min ?? null,
+    relativeHumidityMax: humidity?.max ?? null,
     dispersionIndexMin: dispersion_index?.min ?? null,
     dispersionIndexMax: dispersion_index?.max ?? null,
   };
@@ -60,11 +64,6 @@ const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
     data
   );
 
-  response.success(
-    res,
-    formatThresholdResponse(threshold),
-    "Threshold created/updated successfully"
-  );
   const user = await prisma.user.findUnique({
     where: { id: req.user.id },
     select: {
@@ -78,19 +77,25 @@ const createOrUpdateThreshold = asyncWrapper(async (req, res) => {
   if (!user?.zoneId) {
     throw new CustomError("User zoneId is missing", 400, "ZONE_ID_REQUIRED");
   }
-  if (!user.zoneId) {
-    throw new CustomError("User zoneId is missing", 400, "ZONE_ID_REQUIRED");
-  }
+
   const observations = await getZoneWeatherObservations(user.zoneId);
-  const latestObs = observations?.[0];
-  if (latestObs) {
-    const alerts = checkThresholds(latestObs, threshold);
+  if (observations?.length) {
+    // Call the NEW groupAndCheckThresholds function that expects an array
+    const alerts = checkThresholds(observations, threshold);
+
     if (alerts.length > 0) {
-      for (const msg of alerts) {
-        await sendNotification(user, msg.trim());
+      for (const alert of alerts) {
+        await sendNotification(user, alert.message);
       }
     }
   }
+
+  // Send response AFTER all async operations complete
+  response.success(
+    res,
+    formatThresholdResponse(threshold),
+    "Threshold created/updated successfully"
+  );
 });
 
 const getThreshold = asyncWrapper(async (req, res) => {
