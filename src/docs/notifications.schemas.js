@@ -22,7 +22,7 @@
  *           example: "Weather Alert"
  *         body:
  *           type: string
- *           example: "Temperature exceeded 35°C"
+ *           example: "Temperature will fall below 120°F on Fri, Dec 12, 2025"
  *         type:
  *           type: string
  *           example: "weather_alert"
