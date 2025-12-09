@@ -336,18 +336,14 @@ export function checkThresholds(observations, threshold) {
       if (dirThreshold) {
         const { min, max } = dirThreshold;
 
-        if (obs.windSpeed) {
-          const match = obs.windSpeed.match(/(\d+)(?:\s*to\s*(\d+))?/);
-          const windMin = match ? parseFloat(match[1]) : null;
-          const windMax = match && match[2] ? parseFloat(match[2]) : windMin;
+        if (obs.windSpeed != null) {
+          const windSpeed = obs.windSpeed;
 
           if (
-            windMin != null &&
-            windMax != null &&
             min != null &&
             max != null &&
-            windMax >= min &&
-            windMin <= max
+            windSpeed >= min &&
+            windSpeed <= max
           ) {
             dailyAlerts[date].wind = {
               message: `${direction} Direction wind will be within a range ${min}–${max} mph on ${date}`,
