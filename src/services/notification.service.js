@@ -34,20 +34,20 @@ export async function sendNotification(user, message) {
 
   // console.log("[FCM] Sending payload:", JSON.stringify(payload, null, 2));
 
+  const notification = await prisma.notification.create({
+    data: {
+      userId: user.id,
+      title: "Weather Alert",
+      body: message,
+      type: "weather_alert",
+      severity: "high",
+    },
+  });
+
   try {
     const fcmResponse = await admin.messaging().send(payload);
     console.log("[FCM] Response:", fcmResponse);
     console.log(`[FCM] Sent to ${user.email || user.id}:`, fcmResponse);
-
-    const notification = await prisma.notification.create({
-      data: {
-        userId: user.id,
-        title: "Weather Alert",
-        body: message,
-        type: "weather_alert",
-        severity: "high",
-      },
-    });
 
     return { success: true, userId: user.id, notificationId: notification.id };
   } catch (err) {
