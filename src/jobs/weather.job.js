@@ -190,7 +190,7 @@ export function checkThresholds(observations, threshold) {
   return alerts;
 }
 
-cron.schedule("0 */6 * * *", async () => {
+cron.schedule("0 0 * * *", async () => {
   // cron.schedule("*/10 * * * *", async () => {
   console.log("[CRON] Running weather threshold check...");
 
