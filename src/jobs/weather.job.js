@@ -191,8 +191,9 @@ export function checkThresholds(observations, threshold) {
 }
 
 cron.schedule("0 0 * * *", async () => {
-  // cron.schedule("*/10 * * * *", async () => {
+  //cron.schedule("*/30 * * * * *", async () => {
   console.log("[CRON] Running weather threshold check...");
+  const sentThisRun = new Set();
 
   try {
     const batchSize = 20;
@@ -221,8 +222,13 @@ cron.schedule("0 0 * * *", async () => {
             // Get all daily grouped alerts
             const alerts = checkThresholds(observations, user.Threshold);
 
-            // Send notifications only for uncached alerts
             for (const alert of alerts) {
+              const runKey = `${user.id}:${alert.type}:${alert.date}`;
+
+              // Skip if already sent in this cron run
+              if (sentThisRun.has(runKey)) continue;
+              sentThisRun.add(runKey);
+
               const cacheKey = `${user.id}:${alert.type}:${alert.date}`;
               const lastAlert = getDailyAlertCache(cacheKey);
 
@@ -233,11 +239,11 @@ cron.schedule("0 0 * * *", async () => {
 
                 console.log(
                   `\n📢 ALERT SENT
-                  ├─ User: ${user.email}
-                  ├─ Type: ${alert.type}
-                  ├─ Date: ${alert.date}
-                  ├─ Message: ${alert.message}
-                  └─ Time: ${new Date().toISOString()}\n`
+      ├─ User: ${user.email}
+      ├─ Type: ${alert.type}
+      ├─ Date: ${alert.date}
+      ├─ Message: ${alert.message}
+      └─ Time: ${new Date().toISOString()}\n`
                 );
               }
             }
