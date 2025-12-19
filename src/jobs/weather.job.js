@@ -3,23 +3,6 @@ import { prisma } from "../prisma.js";
 import { getZoneWeatherObservations } from "../services/weather.service.js";
 import { sendNotification } from "../services/notification.service.js";
 
-const dailyAlertCache = new Map();
-const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
-
-function setDailyAlertCache(cacheKey) {
-  dailyAlertCache.set(cacheKey, Date.now());
-}
-
-function getDailyAlertCache(cacheKey) {
-  const timestamp = dailyAlertCache.get(cacheKey);
-  if (!timestamp) return null;
-  if (Date.now() - timestamp > CACHE_TTL) {
-    dailyAlertCache.delete(cacheKey);
-    return null;
-  }
-  return cacheKey;
-}
-
 function hasAnyWindThreshold(threshold) {
   return [
     threshold.northDirMin,
@@ -132,22 +115,34 @@ export function checkThresholds(observations, threshold) {
         }
 
         const windSpeedMap = {
-          N: { min: threshold.northDirMin, max: threshold.northDirMax },
+          N: {
+            min: threshold.northDirMin,
+            max: threshold.northDirMax,
+          },
           NE: {
             min: threshold.northEastDirMin,
             max: threshold.northEastDirMax,
           },
-          E: { min: threshold.eastDirMin, max: threshold.eastDirMax },
+          E: {
+            min: threshold.eastDirMin,
+            max: threshold.eastDirMax,
+          },
           SE: {
             min: threshold.southEastDirMin,
             max: threshold.southEastDirMax,
           },
-          S: { min: threshold.southDirMin, max: threshold.southDirMax },
+          S: {
+            min: threshold.southDirMin,
+            max: threshold.southDirMax,
+          },
           SW: {
             min: threshold.southWestDirMin,
             max: threshold.southWestDirMax,
           },
-          W: { min: threshold.westDirMin, max: threshold.westDirMax },
+          W: {
+            min: threshold.westDirMin,
+            max: threshold.westDirMax,
+          },
           NW: {
             min: threshold.northWestDirMin,
             max: threshold.northWestDirMax,
@@ -191,7 +186,7 @@ export function checkThresholds(observations, threshold) {
 }
 
 cron.schedule("0 0 * * *", async () => {
-  //cron.schedule("*/30 * * * * *", async () => {
+  // cron.schedule("*/30 * * * * *", async () => {
   console.log("[CRON] Running weather threshold check...");
   const sentThisRun = new Set();
 
@@ -229,23 +224,17 @@ cron.schedule("0 0 * * *", async () => {
               if (sentThisRun.has(runKey)) continue;
               sentThisRun.add(runKey);
 
-              const cacheKey = `${user.id}:${alert.type}:${alert.date}`;
-              const lastAlert = getDailyAlertCache(cacheKey);
+              const { password, Threshold, ...safeUser } = user;
+              await sendNotification(safeUser, alert.message);
 
-              if (!lastAlert) {
-                const { password, Threshold, ...safeUser } = user;
-                await sendNotification(safeUser, alert.message);
-                setDailyAlertCache(cacheKey);
-
-                console.log(
-                  `\n📢 ALERT SENT
+              console.log(
+                `\n📢 ALERT SENT
       ├─ User: ${user.email}
       ├─ Type: ${alert.type}
       ├─ Date: ${alert.date}
       ├─ Message: ${alert.message}
       └─ Time: ${new Date().toISOString()}\n`
-                );
-              }
+              );
             }
           } catch (err) {
             console.error(
