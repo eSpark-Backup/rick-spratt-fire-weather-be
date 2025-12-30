@@ -30,8 +30,7 @@ model Threshold {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   temperature Int?
-  relativeHumidityMin Int?
-  relativeHumidityMax Int?
+  relativeHumidity Int?
 
   dispersionIndexMin Int?
   dispersionIndexMax Int?

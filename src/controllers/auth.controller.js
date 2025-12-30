@@ -62,8 +62,7 @@ const signUp = asyncWrapper(async (req, res) => {
 
   const defaultThreshold = {
     temperature: null,
-    relativeHumidityMin: null,
-    relativeHumidityMax: null,
+    relativeHumidity: null,
 
     dispersionIndexMin: null,
     dispersionIndexMax: null,

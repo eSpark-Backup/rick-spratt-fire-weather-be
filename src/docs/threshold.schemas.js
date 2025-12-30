@@ -13,16 +13,9 @@
  *         temperature:
  *           type: number
  *           example: 80
- *         humidity:
- *           type: object
- *           required: [min, max]
- *           properties:          # <-- this line was misplaced
- *             min:
- *               type: number
- *               example: 40
- *             max:
- *               type: number
- *               example: 60
+ *         relativeHumidity:
+ *          type: number
+ *          example: 70
  *         dispersion_index:
  *           type: object
  *           required: [min, max]

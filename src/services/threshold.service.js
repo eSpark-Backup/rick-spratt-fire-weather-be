@@ -8,8 +8,7 @@ export const createOrUpdateThreshold = async (userId, data) => {
       update: {
         temperature: data.temperature,
 
-        relativeHumidityMin: data.relativeHumidityMin ?? null,
-        relativeHumidityMax: data.relativeHumidityMax ?? null,
+        relativeHumidity: data.relativeHumidity ?? null,
 
         dispersionIndexMin: data.dispersionIndexMin ?? null,
         dispersionIndexMax: data.dispersionIndexMax ?? null,
@@ -36,8 +35,7 @@ export const createOrUpdateThreshold = async (userId, data) => {
         userId,
         temperature: data.temperature,
 
-        relativeHumidityMin: data.relativeHumidityMin ?? null,
-        relativeHumidityMax: data.relativeHumidityMax ?? null,
+        relativeHumidity: data.relativeHumidity ?? null,
 
         dispersionIndexMin: data.dispersionIndexMin ?? null,
         dispersionIndexMax: data.dispersionIndexMax ?? null,

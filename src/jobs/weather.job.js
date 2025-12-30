@@ -51,11 +51,7 @@ export function checkThresholds(observations, threshold) {
       if (!dailyAlerts[date]) {
         dailyAlerts[date] = {
           temperature: threshold.temperature != null ? false : null,
-          humidity:
-            threshold.relativeHumidityMin != null &&
-            threshold.relativeHumidityMax != null
-              ? false
-              : null,
+          humidity: threshold.relativeHumidity != null ? false : null,
           dispersion:
             threshold.dispersionIndexMin != null &&
             threshold.dispersionIndexMax != null
@@ -77,12 +73,11 @@ export function checkThresholds(observations, threshold) {
       }
 
       // Humidity: mark true if obs within threshold range
+      // Humidity: mark true if obs exceeds threshold
       if (
         obs.relativeHumidity != null &&
-        threshold.relativeHumidityMin != null &&
-        threshold.relativeHumidityMax != null &&
-        obs.relativeHumidity >= threshold.relativeHumidityMin &&
-        obs.relativeHumidity <= threshold.relativeHumidityMax
+        threshold.relativeHumidity != null &&
+        obs.relativeHumidity >= threshold.relativeHumidity
       ) {
         day.humidity = true;
       }

@@ -28,21 +28,7 @@ const dir = Joi.object({
 export const createThresholdValidator = Joi.object({
   temperature: Joi.number().min(-100).max(200).allow(null).default(null),
 
-  humidity: Joi.object({
-    min: Joi.number().min(0).max(100).allow(null).default(null),
-    max: Joi.number().min(0).max(100).allow(null).default(null),
-  })
-    .custom((value, helpers) => {
-      const { min, max } = value;
-      if (min !== null && max !== null && min > max) {
-        return helpers.error("any.invalid", {
-          message: `"humidity.min" cannot be greater than "humidity.max"`,
-        });
-      }
-      return value;
-    })
-    .allow(null)
-    .default(null),
+  relativeHumidity: Joi.number().min(0).max(100).allow(null).default(null),
 
   dispersion_index: Joi.object({
     min: Joi.number().min(0).max(100).allow(null).default(null),
