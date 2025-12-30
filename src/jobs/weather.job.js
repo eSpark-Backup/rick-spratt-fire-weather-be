@@ -77,7 +77,7 @@ export function checkThresholds(observations, threshold) {
       if (
         obs.relativeHumidity != null &&
         threshold.relativeHumidity != null &&
-        obs.relativeHumidity >= threshold.relativeHumidity
+        obs.relativeHumidity < threshold.relativeHumidity
       ) {
         day.humidity = true;
       }
