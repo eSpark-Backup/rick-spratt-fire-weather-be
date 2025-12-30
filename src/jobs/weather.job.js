@@ -72,7 +72,6 @@ export function checkThresholds(observations, threshold) {
         day.temperature = true;
       }
 
-      // Humidity: mark true if obs within threshold range
       // Humidity: mark true if obs exceeds threshold
       if (
         obs.relativeHumidity != null &&
