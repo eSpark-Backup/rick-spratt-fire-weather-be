@@ -8,20 +8,21 @@ datasource db {
 }
 
 model User {
-  id           String         @id @default(uuid())
-  firstName    String
-  lastName     String
-  email        String         @unique
-  password     String
-  country      String         @default("US")
-  state        String         @default("Florida")
-  zoneId       String
-  deviceToken  String?
-  lastLoginAt  DateTime?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  Threshold    Threshold?
-  Notification Notification[]
+  id            String          @id @default(uuid())
+  firstName     String
+  lastName      String
+  email         String          @unique
+  password      String
+  country       String          @default("US")
+  state         String          @default("Florida")
+  zoneId        String
+  deviceToken   String?
+  lastLoginAt   DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  Threshold     Threshold?
+  Notification  Notification[]
+  PasswordReset PasswordReset[]
 }
 
 model Threshold {
@@ -29,7 +30,7 @@ model Threshold {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  temperature Int?
+  temperature      Int?
   relativeHumidity Int?
 
   dispersionIndexMin Int?
@@ -69,6 +70,20 @@ model Notification {
   type     String  @default("weather_alert") // e.g. weather_alert, system, info
   severity String? // e.g. high, medium, low
   isRead   Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  userId    String?
+  email     String
+  otpHash   String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

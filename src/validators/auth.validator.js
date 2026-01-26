@@ -9,7 +9,7 @@ const signUpSchema = Joi.object({
     .max(100)
     .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$"))
     .message(
-      "Password must contain at least 1 uppercase, 1 lowercase, and 1 digit"
+      "Password must contain at least 1 uppercase, 1 lowercase, and 1 digit",
     )
     .required(),
   confirmPassword: Joi.any().valid(Joi.ref("password")).required(),
@@ -40,4 +40,37 @@ const updateDeviceTokenSchema = Joi.object({
     .required(),
 });
 
-export { signUpSchema, loginSchema, updateZoneSchema, updateDeviceTokenSchema };
+const forgotPasswordSchema = Joi.object({
+  email: Joi.string().trim().lowercase().email().required(),
+});
+
+const verifyOtpSchema = Joi.object({
+  email: Joi.string().trim().lowercase().email().required(),
+  otp: Joi.string()
+    .length(6)
+    .pattern(/^[0-9]+$/)
+    .required(),
+});
+
+const resetPasswordSchema = Joi.object({
+  resetToken: Joi.string().required(),
+  password: Joi.string()
+    .min(8)
+    .max(100)
+    .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$"))
+    .message(
+      "Password must contain at least 1 uppercase, 1 lowercase, and 1 digit",
+    )
+    .required(),
+  confirmPassword: Joi.string().required(),
+});
+
+export {
+  signUpSchema,
+  loginSchema,
+  updateZoneSchema,
+  updateDeviceTokenSchema,
+  forgotPasswordSchema,
+  verifyOtpSchema,
+  resetPasswordSchema,
+};
