@@ -9,6 +9,8 @@ import { CustomError } from "../utils/custom_error.js";
 import * as response from "../utils/response.js";
 import { getZoneById } from "../services/weather.service.js";
 import * as thresholdService from "../services/threshold.service.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 const OTP_EXPIRATION_MINUTES = parseInt(
   process.env.OTP_EXPIRATION_MINUTES || "15",
