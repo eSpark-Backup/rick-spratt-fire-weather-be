@@ -1,44 +1,62 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+
 dotenv.config();
 
-const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
-const smtpUser = process.env.SMTP_USER;
-const smtpPass = process.env.SMTP_PASS;
-const smtpFrom = process.env.SMTP_FROM || smtpUser;
-const smtpPort = process.env.SMTP_PORT || 465;
-const smtpSecure = process.env.SMTP_SECURE || true;
+const smtp_host = process.env.SMTP_HOST || "smtp.gmail.com";
+const smtp_user = process.env.SMTP_USER;
+const smtp_pass = process.env.SMTP_PASS;
+const smtp_from = process.env.SMTP_FROM || smtp_user;
+const smtp_port = Number(process.env.SMTP_PORT) || 587;
+const smtp_secure = process.env.SMTP_SECURE === "true";
 
-if (!smtpUser || !smtpPass) {
-  console.warn(
-    "SMTP_USER or SMTP_PASS not set — email sending will fail until configured",
-  );
+if (!smtp_user || !smtp_pass) {
+  throw new Error("SMTP credentials are missing in environment variables");
 }
 
 const transporter = nodemailer.createTransport({
-  host: smtpHost,
-  port: smtpPort,
-  secure: smtpSecure,
+  host: smtp_host,
+  port: smtp_port,
+  secure: smtp_secure,
+  pool: true,
+  maxConnections: 5,
+  maxMessages: 100,
   auth: {
-    user: smtpUser,
-    pass: smtpPass,
+    user: smtp_user,
+    pass: smtp_pass,
   },
+  tls: {
+    rejectUnauthorized: true,
+  },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
 });
 
+await transporter.verify();
+
 const sendMail = async ({ to, subject, text, html }) => {
-  if (!smtpUser || !smtpPass) {
-    throw new Error("SMTP credentials not configured");
+  if (!to || !subject) {
+    throw new Error("Missing required mail fields");
   }
 
-  const info = await transporter.sendMail({
-    from: smtpFrom,
-    to,
-    subject,
-    text,
-    html,
-  });
+  try {
+    const info = await transporter.sendMail({
+      from: smtp_from,
+      to,
+      subject,
+      text,
+      html,
+    });
 
-  return info;
+    return {
+      message_id: info.messageId,
+      accepted: info.accepted,
+      rejected: info.rejected,
+    };
+  } catch (error) {
+    throw new Error(`Email sending failed: ${error.message}`);
+  }
 };
 
 export { sendMail };
