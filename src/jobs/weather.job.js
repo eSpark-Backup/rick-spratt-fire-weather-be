@@ -76,7 +76,7 @@ export function checkThresholds(observations, threshold) {
       if (
         obs.relativeHumidity != null &&
         threshold.relativeHumidity != null &&
-        obs.relativeHumidity < threshold.relativeHumidity
+        obs.relativeHumidity > threshold.relativeHumidity
       ) {
         day.humidity = true;
       }
@@ -227,16 +227,16 @@ cron.schedule("0 0 * * *", async () => {
       ├─ Type: ${alert.type}
       ├─ Date: ${alert.date}
       ├─ Message: ${alert.message}
-      └─ Time: ${new Date().toISOString()}\n`
+      └─ Time: ${new Date().toISOString()}\n`,
               );
             }
           } catch (err) {
             console.error(
               `[CRON] Weather fetch failed for ${user.email}:`,
-              err?.message ?? err
+              err?.message ?? err,
             );
           }
-        })
+        }),
       );
 
       skip += batchSize;
