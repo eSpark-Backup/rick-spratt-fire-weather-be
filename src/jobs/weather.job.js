@@ -17,39 +17,92 @@ function hasAnyWindThreshold(threshold) {
 }
 
 export function checkThresholds(observations, threshold) {
-  const dailyAlerts = {};
+  // --- ALIGN WIND SPEED AND DIRECTION INTO HOURLY OBSERVATIONS ---
+  function expandHourly(series) {
+    const result = [];
+    for (const obs of series.values) {
+      const [startStr, durStr] = obs.validTime.split("/");
+      const start = new Date(startStr);
+      let hours = 1;
+      if (durStr.startsWith("PT")) {
+        const h = durStr.match(/(\d+)H/);
+        const m = durStr.match(/(\d+)M/);
+        hours = 0;
+        if (h) hours += parseInt(h[1], 10);
+        if (m) hours += Math.ceil(parseInt(m[1], 10) / 60);
+        if (hours === 0) hours = 1;
+      }
+      for (let i = 0; i < hours; i++) {
+        result.push({
+          timestamp: new Date(start.getTime() + i * 3600000).toISOString(),
+          value: obs.value,
+        });
+      }
+    }
+    return result;
+  }
 
-  observations.forEach((obs) => {
-    if (!obs.timestamp) return;
+  // Assuming observations has windSpeedSeries and windDirectionSeries
+  if (observations.windSpeedSeries && observations.windDirectionSeries) {
+    const windSpeedHourly = expandHourly(observations.windSpeedSeries);
+    const windDirHourly = expandHourly(observations.windDirectionSeries);
 
-    // Split timestamp into start time and duration
+    const hourlyObsMap = {};
+
+    // Map wind direction per hour
+    for (const obs of windDirHourly) {
+      hourlyObsMap[obs.timestamp] = hourlyObsMap[obs.timestamp] || {};
+      hourlyObsMap[obs.timestamp].windDirection = obs.value;
+    }
+
+    // Convert numeric wind direction to compass (N, NE, E, etc.)
+    for (const key in hourlyObsMap) {
+      const dir = hourlyObsMap[key].windDirection;
+      if (typeof dir === "number") {
+        const dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+        hourlyObsMap[key].windDirection = dirs[Math.round(dir / 45) % 8];
+      }
+    }
+
+    // Map wind speed per hour
+    for (const obs of windSpeedHourly) {
+      hourlyObsMap[obs.timestamp] = hourlyObsMap[obs.timestamp] || {};
+      hourlyObsMap[obs.timestamp].windSpeed = obs.value;
+    }
+
+    // Replace observations array with merged, only keep hours with both windDirection and windSpeed
+    observations = Object.values(hourlyObsMap).filter(
+      (o) => o.windDirection != null && o.windSpeed != null,
+    );
+  }
+
+  const dailyData = {};
+
+  for (const obs of observations) {
+    if (!obs.timestamp) continue;
+
     const [startTimeStr, durationStr] = obs.timestamp.split("/");
     const startDate = new Date(startTimeStr);
 
-    // Parse duration properly (hours + minutes)
+    // parse duration
     let durationHours = 1;
     if (durationStr && durationStr.startsWith("PT")) {
-      const hoursMatch = durationStr.match(/(\d+)H/);
-      const minsMatch = durationStr.match(/(\d+)M/);
+      const hours = durationStr.match(/(\d+)H/);
+      const mins = durationStr.match(/(\d+)M/);
+
       durationHours = 0;
-      if (hoursMatch) durationHours += parseInt(hoursMatch[1], 10);
-      if (minsMatch)
-        durationHours += Math.ceil(parseInt(minsMatch[1], 10) / 60);
-      if (durationHours === 0) durationHours = 1; // fallback
+      if (hours) durationHours += parseInt(hours[1], 10);
+      if (mins) durationHours += Math.ceil(parseInt(mins[1], 10) / 60);
+      if (durationHours === 0) durationHours = 1;
     }
 
-    // Loop through each hour in the forecast period
     for (let i = 0; i < durationHours; i++) {
-      const obsDate = new Date(startDate.getTime() + i * 60 * 60 * 1000);
-      const date = obsDate.toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
+      const obsDate = new Date(startDate.getTime() + i * 3600000);
 
-      if (!dailyAlerts[date]) {
-        dailyAlerts[date] = {
+      const dateKey = obsDate.toISOString().split("T")[0];
+
+      if (!dailyData[dateKey]) {
+        dailyData[dateKey] = {
           temperature: threshold.temperature != null ? false : null,
           humidity: threshold.relativeHumidity != null ? false : null,
           dispersion:
@@ -58,12 +111,26 @@ export function checkThresholds(observations, threshold) {
               ? false
               : null,
           windOK: hasAnyWindThreshold(threshold) ? false : null,
+
+          maxDispersion: -Infinity,
+
+          // DAILY MAX wind speed per direction
+          maxWind: {
+            N: -Infinity,
+            NE: -Infinity,
+            E: -Infinity,
+            SE: -Infinity,
+            S: -Infinity,
+            SW: -Infinity,
+            W: -Infinity,
+            NW: -Infinity,
+          },
         };
       }
 
-      const day = dailyAlerts[date];
+      const day = dailyData[dateKey];
 
-      // Temperature: mark true if obs is below threshold
+      // Temperature
       if (
         threshold.temperature != null &&
         obs.temperature != null &&
@@ -72,109 +139,135 @@ export function checkThresholds(observations, threshold) {
         day.temperature = true;
       }
 
-      // Humidity: mark true if obs exceeds threshold
+      // Humidity
       if (
-        obs.relativeHumidity != null &&
         threshold.relativeHumidity != null &&
+        obs.relativeHumidity != null &&
         obs.relativeHumidity > threshold.relativeHumidity
       ) {
         day.humidity = true;
       }
 
-      // Dispersion index: mark true if obs within threshold range
-      if (
-        obs.dispersionIndex != null &&
-        threshold.dispersionIndexMin != null &&
-        threshold.dispersionIndexMax != null &&
-        obs.dispersionIndex >= threshold.dispersionIndexMin &&
-        obs.dispersionIndex <= threshold.dispersionIndexMax
-      ) {
-        day.dispersion = true;
+      // Track DAILY MAX dispersion
+      if (obs.dispersionIndex != null) {
+        day.maxDispersion = Math.max(day.maxDispersion, obs.dispersionIndex);
       }
 
-      // Wind: mark true if any obs satisfies directional threshold
-      if (obs.windDirection != null && obs.windSpeed != null) {
-        let direction = obs.windDirection;
+      if (obs.windDirection && obs.windSpeed != null) {
+        const dir = obs.windDirection;
 
-        if (typeof direction === "number") {
-          const degree = direction;
-          if (degree >= 337.5 || degree < 22.5) direction = "N";
-          else if (degree < 67.5) direction = "NE";
-          else if (degree < 112.5) direction = "E";
-          else if (degree < 157.5) direction = "SE";
-          else if (degree < 202.5) direction = "S";
-          else if (degree < 247.5) direction = "SW";
-          else if (degree < 292.5) direction = "W";
-          else direction = "NW";
-        }
+        // Only track directions that actually have a threshold set
+        const minKey = {
+          N: "northDirMin",
+          NE: "northEastDirMin",
+          E: "eastDirMin",
+          SE: "southEastDirMin",
+          S: "southDirMin",
+          SW: "southWestDirMin",
+          W: "westDirMin",
+          NW: "northWestDirMin",
+        }[dir];
 
-        const windSpeedMap = {
-          N: {
-            min: threshold.northDirMin,
-            max: threshold.northDirMax,
-          },
-          NE: {
-            min: threshold.northEastDirMin,
-            max: threshold.northEastDirMax,
-          },
-          E: {
-            min: threshold.eastDirMin,
-            max: threshold.eastDirMax,
-          },
-          SE: {
-            min: threshold.southEastDirMin,
-            max: threshold.southEastDirMax,
-          },
-          S: {
-            min: threshold.southDirMin,
-            max: threshold.southDirMax,
-          },
-          SW: {
-            min: threshold.southWestDirMin,
-            max: threshold.southWestDirMax,
-          },
-          W: {
-            min: threshold.westDirMin,
-            max: threshold.westDirMax,
-          },
-          NW: {
-            min: threshold.northWestDirMin,
-            max: threshold.northWestDirMax,
-          },
-        };
-
-        const dirThreshold = windSpeedMap[direction];
+        const maxKey = {
+          N: "northDirMax",
+          NE: "northEastDirMax",
+          E: "eastDirMax",
+          SE: "southEastDirMax",
+          S: "southDirMax",
+          SW: "southWestDirMax",
+          W: "westDirMax",
+          NW: "northWestDirMax",
+        }[dir];
 
         if (
-          dirThreshold &&
-          dirThreshold.min != null &&
-          dirThreshold.max != null &&
-          obs.windSpeed >= dirThreshold.min &&
-          obs.windSpeed <= dirThreshold.max
+          minKey &&
+          maxKey &&
+          threshold[minKey] != null &&
+          threshold[maxKey] != null
         ) {
-          day.windOK = true;
+          day.maxWind[dir] = Math.max(day.maxWind[dir], obs.windSpeed);
         }
       }
     }
-  });
+  }
 
-  // Aggregate alerts per day
   const alerts = [];
 
-  Object.entries(dailyAlerts).forEach(([date, day]) => {
-    // if (day.temperature && day.humidity && day.dispersion && day.windOK) {
-    const allConditionsMet = Object.values(day)
-      .filter((v) => v !== null) // ignore unset thresholds
+  for (const [date, day] of Object.entries(dailyData)) {
+    // ---------- DISPERSION CHECK ----------
+    if (day.dispersion !== null) {
+      if (
+        day.maxDispersion !== -Infinity &&
+        day.maxDispersion >= threshold.dispersionIndexMin &&
+        day.maxDispersion <= threshold.dispersionIndexMax
+      ) {
+        day.dispersion = true;
+      } else {
+        day.dispersion = false;
+      }
+    }
+
+    if (day.windOK !== null) {
+      const windThresholdMap = {
+        N: ["northDirMin", "northDirMax"],
+        NE: ["northEastDirMin", "northEastDirMax"],
+        E: ["eastDirMin", "eastDirMax"],
+        SE: ["southEastDirMin", "southEastDirMax"],
+        S: ["southDirMin", "southDirMax"],
+        SW: ["southWestDirMin", "southWestDirMax"],
+        W: ["westDirMin", "westDirMax"],
+        NW: ["northWestDirMin", "northWestDirMax"],
+      };
+
+      let allWithinThreshold = true;
+
+      for (const dir in windThresholdMap) {
+        const [minKey, maxKey] = windThresholdMap[dir];
+
+        const minVal = threshold[minKey];
+        const maxVal = threshold[maxKey];
+
+        if (minVal == null || maxVal == null) continue;
+
+        const maxWind = day.maxWind?.[dir];
+
+        // Only consider directions that actually occurred
+        if (maxWind === -Infinity) {
+          allWithinThreshold = false; // Direction threshold exists but no data
+          break;
+        }
+        if (maxWind < minVal || maxWind > maxVal) {
+          allWithinThreshold = false;
+          break;
+        }
+      }
+
+      day.windOK = allWithinThreshold;
+    }
+
+    // ---------- FINAL CONDITION ----------
+    const checks = ["temperature", "humidity", "dispersion", "windOK"];
+
+    const allConditionsMet = checks
+      .map((k) => day[k])
+      .filter((v) => v !== null)
       .every((v) => v === true);
 
     if (allConditionsMet) {
+      const formattedDate = new Date(date).toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+
       alerts.push({
         type: "all_conditions",
-        date,
-        message: `All burn conditions are forecasted to be within thresholds on ${date}`,
+        date: formattedDate,
+        message: `All burn conditions are forecasted to be within thresholds on ${formattedDate}`,
       });
     }
-  });
+  }
 
   return alerts;
 }

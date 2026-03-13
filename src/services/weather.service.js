@@ -15,7 +15,7 @@ export const getAllZones = async ({
         "Area parameter is required",
         400,
         "VALIDATION_ERROR",
-        { area }
+        { area },
       );
 
     const { data } = await axios.get(`${WEATHER_API_BASE}/zones`, {
@@ -27,7 +27,7 @@ export const getAllZones = async ({
         `No zones found for area ${area}`,
         404,
         "NOT_FOUND",
-        { area, type }
+        { area, type },
       );
     }
 
@@ -35,7 +35,7 @@ export const getAllZones = async ({
     const zonesWithData = data.features.filter(
       (zone) =>
         Array.isArray(zone.properties.observationStations) &&
-        zone.properties.observationStations.length > 0
+        zone.properties.observationStations.length > 0,
     );
 
     if (zonesWithData.length === 0) {
@@ -43,7 +43,7 @@ export const getAllZones = async ({
         `No zones with available weather data for area ${area}`,
         404,
         "NOT_FOUND",
-        { area, type }
+        { area, type },
       );
     }
 
@@ -69,7 +69,7 @@ export const getAllZones = async ({
       `Failed to fetch zones for ${area}${type ? ` (${type})` : ""}`,
       502,
       "WEATHER_API_ERROR",
-      { area, type, originalError: error.message }
+      { area, type, originalError: error.message },
     );
   }
 };
@@ -78,7 +78,7 @@ export const getZoneWeatherObservations = async (zoneId) => {
   try {
     // Step 1: Get point coordinates from zone observations
     const obsResponse = await axios.get(
-      `https://api.weather.gov/zones/forecast/${zoneId}/observations`
+      `https://api.weather.gov/zones/forecast/${zoneId}/observations`,
     );
     const obsData = obsResponse.data;
 
@@ -93,13 +93,13 @@ export const getZoneWeatherObservations = async (zoneId) => {
 
     // Step 2: Convert coordinates to gridpoint
     const pointRes = await axios.get(
-      `https://api.weather.gov/points/${lat},${lon}`
+      `https://api.weather.gov/points/${lat},${lon}`,
     );
     const { gridId, gridX, gridY } = pointRes.data.properties;
 
     // Step 3: Fetch raw gridpoint data with all parameters
     const gridRes = await axios.get(
-      `https://api.weather.gov/gridpoints/${gridId}/${gridX},${gridY}`
+      `https://api.weather.gov/gridpoints/${gridId}/${gridX},${gridY}`,
     );
     const props = gridRes.data.properties;
 
@@ -125,9 +125,19 @@ export const getZoneWeatherObservations = async (zoneId) => {
     };
 
     // Helper function to find value for a specific timestamp
+    // we prefer a value whose interval *starts exactly* at the target time
+    // so that shorter/updated periods override longer covering ones.
     const findValueAtTime = (timeSeriesList, targetTime) => {
       if (!timeSeriesList?.length) return null;
 
+      // try an exact-start hit first
+      const exact = timeSeriesList.find((item) => {
+        const { start } = parseValidTime(item.validTime);
+        return start === targetTime;
+      });
+      if (exact) return exact.value ?? null;
+
+      // fallback to any interval covering the timestamp
       const match = timeSeriesList.find((item) => {
         const { start, end } = parseValidTime(item.validTime);
         return targetTime >= start && targetTime < end;
@@ -149,7 +159,7 @@ export const getZoneWeatherObservations = async (zoneId) => {
       return +((c * 9) / 5 + 32).toFixed(1);
     };
 
-    // Helper to convert m/s to mph
+    // Helper to convert kmph to mph
     const kmhToMph = (kmh) => {
       if (kmh == null) return null;
       return +(kmh * 0.621371).toFixed(1);
